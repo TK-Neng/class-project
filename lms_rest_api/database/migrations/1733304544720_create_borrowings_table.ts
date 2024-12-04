@@ -5,7 +5,7 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('id')
+      table.increments('borrow_id')
       table.integer('user_id').unsigned().notNullable().references('user_id').inTable('users').onDelete('CASCADE');
       table.integer('book_id').unsigned().notNullable().references('book_id').inTable('books').onDelete('CASCADE');
       table.date('borrow_date').notNullable();
