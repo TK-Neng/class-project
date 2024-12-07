@@ -1,7 +1,7 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import Borrowing from '#models/borrowing'
 import { DateTime } from 'luxon'
-
+import Status from '../../contract/Status.js'
 export default class BoorrowingSeeder extends BaseSeeder {
   public async run() {
     await Borrowing.createMany([
@@ -11,7 +11,7 @@ export default class BoorrowingSeeder extends BaseSeeder {
         borrow_date: DateTime.local(),
         due_date: DateTime.local().plus({ days: 14 }),
         return_date: null,
-        status: 'borrowed',
+        status: Status.BORROWED,
       },
       {
         user_id: 2,
@@ -19,7 +19,7 @@ export default class BoorrowingSeeder extends BaseSeeder {
         borrow_date: DateTime.local().minus({ days: 20 }),
         due_date: DateTime.local().minus({ days: 6 }),
         return_date: DateTime.local().minus({ days: 5 }),
-        status: 'returned',
+        status: Status.RETURNED,
       },
       {
         user_id: 2,
@@ -27,7 +27,7 @@ export default class BoorrowingSeeder extends BaseSeeder {
         borrow_date: DateTime.local().minus({ days: 30 }),
         due_date: DateTime.local().minus({ days: 16 }),
         return_date: null,
-        status: 'overdue',
+        status: Status.OVERDUE,
       },
     ])
   }

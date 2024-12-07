@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
-
+import Status from '../../contract/Status.js'
 export default class Borrowing extends BaseModel {
   @column({ isPrimary: true })
   declare borrow_id: number
@@ -21,7 +21,7 @@ export default class Borrowing extends BaseModel {
   declare return_date: DateTime | null
 
   @column()
-  declare status: 'borrowed' | 'returned' | 'overdue'
+  declare status: Status
 
 
   @column.dateTime({ autoCreate: true })
