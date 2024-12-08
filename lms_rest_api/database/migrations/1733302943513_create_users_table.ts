@@ -11,7 +11,7 @@ export default class extends BaseSchema {
       table.string('username', 255).notNullable().unique()
       table.string('password', 255).notNullable()
       table.string('email', 255).unique().notNullable()
-      table.enum('role', ['admin', 'user']).defaultTo('user')
+      table.enum('role', ['ADMIN', 'USER']).defaultTo('USER')
       table.string('phone_number', 20).nullable()
       table.timestamp('created_at')
       table.timestamp('updated_at')

@@ -11,7 +11,7 @@ export default class extends BaseSchema {
       table.date('borrow_date').notNullable();
       table.date('due_date').notNullable();
       table.date('return_date').nullable();
-      table.enum('status', ['borrowed', 'returned', 'overdue']).defaultTo('borrowed');
+      table.enum('status', ['BORROWED', 'RETURNED', 'OVERDUE']).defaultTo('BORROWED');
       table.timestamp('created_at')
       table.timestamp('updated_at')
     })
