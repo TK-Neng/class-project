@@ -5,6 +5,7 @@ router.group(() => {
     router.group(() => {
         router.post('/register', [UsersController, 'register']).as('register')
         router.post('/login', [UsersController, 'login']).as('login')
+        router.post('/logout', [UsersController, 'logout']).as('logout')
     }).prefix('/v1/users')
 }).prefix('/api')
 
