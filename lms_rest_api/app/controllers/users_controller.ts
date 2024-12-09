@@ -14,7 +14,7 @@ export default class UsersController {
         }
     }
 
-    async login({ auth, request }: HttpContext) {
+    async login({ auth, request, response }: HttpContext) {
         try {
             const { username, password } = request.all()
             const user = await User.verifyCredentials(username, password)
@@ -28,19 +28,13 @@ export default class UsersController {
                 role: user.role
             }
         } catch (error) {
-            throw new Error('Invalid credentials')
+            return response.unauthorized(error.message)
         }
     }
     async registerAdmin({ request, response, auth }: HttpContext) {
         try {
-            const user = auth.user
-            // Debug auth header
-            console.log('Auth Header:', request.header('Authorization'))
-
-            console.log('Auth User:', user) // See full user object
-            console.log('Auth State:', auth) // See auth state
-
-            if (user?.role !== Role.ADMIN) {
+            const user = auth.getUserOrFail()
+            if (user.role !== Role.ADMIN) {
                 return response.unauthorized('Only admins can create admin accounts')
             }
 
