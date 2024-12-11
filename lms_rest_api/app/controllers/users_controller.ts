@@ -14,16 +14,15 @@ export default class UsersController {
         }
     }
 
-    async login({ auth, request, response }: HttpContext) {
+    async login({ auth, request, response, session }: HttpContext) {
         try {
-            const { username, password } = request.only(['username','password'])
+            const { username, password } = request.only(['username', 'password'])
             const user = await User.verifyCredentials(username, password)
 
             await auth.use('web').login(user)
-            // ใช้ getUserOrFail เพื่อดึงข้อมูลผู้ใช้และเพิ่ม role ลงใน session
-            const authenticatedUser = auth.use('web').getUserOrFail();
-            authenticatedUser.role = user.role;
-            response.ok({ message: 'Logged in successfully'})
+            // เพิ่ม role ลงใน session
+            session.put('role', user.role);
+            response.ok({ message: 'Logged in successfully' })
 
         } catch (error) {
             return response.unauthorized(error.message)
@@ -32,7 +31,6 @@ export default class UsersController {
     async registerAdmin({ request, response, auth }: HttpContext) {
         try {
             const user = auth.getUserOrFail()
-            console.log(user.role)
             if (user.role !== Role.ADMIN) {
                 return response.unauthorized('Only admins can create admin accounts')
             }
@@ -59,5 +57,16 @@ export default class UsersController {
         }
     }
 
+    async checkLogin({ auth, response }: HttpContext) {
+        try {
+            if (auth.user) {
+                return response.json({ authenticated: true, role: auth.user.role });
+            }
+            return response.json({ authenticated: false });
+        }
+        catch (error) {
+            return response.json({ authenticated: false })
+        }
+    }
 
 }
