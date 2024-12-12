@@ -3,10 +3,16 @@ import Login from "../components/Login.vue";
 const history = createWebHistory(import.meta.env.BASE_URL);
 import Home from "../components/Home.vue";
 import Register from "../components/Register.vue";
-import { URL } from "../../composable/getBook";
+import { URL } from "../../composable/getUser";
+import AddBook from "../components/AddBook.vue";
+
 const routes = [
   {
     path: "/",
+    redirect: "/login", // Redirect ไปที่ path /home
+  },
+  {
+    path: '/:pathMatch(.*)*',
     redirect: "/login", // Redirect ไปที่ path /home
   },
   {
@@ -27,6 +33,15 @@ const routes = [
       requiresAuth: true,
     },
   },
+  {
+    path: "/addbook",
+    name: "AddBook",
+    component: AddBook,
+    meta: {
+      requiresAuth: true,
+      requiresAuthRole: true,
+    },
+  },
 ];
 
 const router = createRouter({ history, routes });
@@ -41,32 +56,37 @@ const checkSession = async () => {
       credentials: "include",
     });
     if (res.status === 404) {
-      return false;
+      return { authenticated: false, role: null };
     }
     const data = await res.json();
-    console.log(data.role);
-    return data.authenticated;
+    return { authenticated: data.authenticated, role: data.role };
   } catch (err) {
-    return false;
+    return { authenticated: false, role: null };
   }
 };
 
 // Navigation Guards
 router.beforeEach(async (to, from, next) => {
-  const isAuthenticated = await checkSession(); // ตรวจสอบสถานะการล็อกอิน
+  const { authenticated, role } = await checkSession();
 
   if (to.meta.requiresAuth) {
-    if (isAuthenticated) {
-      next(); // อนุญาตให้ไปที่หน้า Home
-    } else {
+    if (!authenticated) {
       alert("Please login first");
-      next("/login"); // เปลี่ยนเส้นทางไปหน้า Login
+      next("/login");
+      return;
     }
-  } else if (to.name === "Login" && isAuthenticated) {
-    // หากผู้ใช้ล็อกอินแล้ว ไม่ให้กลับไปที่หน้า Login
+    
+    if (to.meta.requiresAuthRole && role !== "ADMIN") {
+      alert("Access denied. Admin privileges required.");
+      next("/home");
+      return;
+    }
+    
+    next();
+  } else if (to.name === "Login" && authenticated) {
     next("/home");
   } else {
-    next(); // เส้นทางที่ไม่ต้องการการล็อกอิน
+    next();
   }
 });
 

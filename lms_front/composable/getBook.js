@@ -1,5 +1,5 @@
 const API_ROOT = import.meta.env.VITE_API_ROOT;
-const URL = `${API_ROOT}/api/v1/users`;
+const urlBook = `${API_ROOT}/api`;
 
 
-export { URL };
+export { urlBook };

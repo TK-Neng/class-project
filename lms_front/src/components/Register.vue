@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { URL } from '../../composable/getBook';
+import { URL } from '../../composable/getUser';
 const router = useRouter();
 const step = ref(1);
 
@@ -93,7 +93,7 @@ const register = async (event, formData) => {
 
         if (res.ok) {
             router.push({ name: 'Login' });
-        } 
+        }
     } catch (error) {
         console.error(error);
     }
@@ -162,7 +162,8 @@ const toggleConfirmPasswordVisibility = () => {
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700">Email</label>
                             <div class="mt-1">
-                                <input v-model="formData.email" name="email" type="email-address" autocomplete="email-address" required
+                                <input v-model="formData.email" name="email" type="email-address"
+                                    autocomplete="email-address" required
                                     class="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm" />
                                 <span class="text-red-500 text-sm">{{ errors.email }}</span>
                             </div>
@@ -171,10 +172,12 @@ const toggleConfirmPasswordVisibility = () => {
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                             <div class="mt-1 relative flex items-center">
-                                <input :type="showPassword ? 'text' : 'password'" v-model="formData.password" name="password" autocomplete="password" required
+                                <input :type="showPassword ? 'text' : 'password'" v-model="formData.password"
+                                    name="password" autocomplete="password" required
                                     class="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm" />
-                                <svg @click="togglePasswordVisibility" xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb"
-                                    class="w-[18px] h-[18px] absolute right-4 cursor-pointer" viewBox="0 0 128 128">
+                                <svg @click="togglePasswordVisibility" xmlns="http://www.w3.org/2000/svg" fill="#bbb"
+                                    stroke="#bbb" class="w-[18px] h-[18px] absolute right-4 cursor-pointer"
+                                    viewBox="0 0 128 128">
                                     <path v-if="!showPassword"
                                         d="M64 104C22.127 104 1.367 67.496.504 65.943a4 4 0 0 1 0-3.887C1.367 60.504 22.127 24 64 24s62.633 36.504 63.496 38.057a4 4 0 0 1 0 3.887C126.633 67.496 105.873 104 64 104zM8.707 63.994C13.465 71.205 32.146 96 64 96c31.955 0 50.553-24.775 55.293-31.994C114.535 56.795 95.854 32 64 32 32.045 32 13.447 56.775 8.707 63.994zM64 88c-13.234 0-24-10.766-24-24s10.766-24 24-24 24 10.766 24 24-10.766 24-24 24zm0-40c-8.822 0-16 7.178-16 16s7.178 16 16 16 16-7.178 16-16-7.178-16-16-16z"
                                         data-original="#000000"></path>
@@ -187,12 +190,16 @@ const toggleConfirmPasswordVisibility = () => {
                         </div>
 
                         <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                            <label for="password" class="block text-sm font-medium text-gray-700">Confirm
+                                Password</label>
                             <div class="mt-1 relative flex items-center">
-                                <input :type="showConfirmPassword ? 'text' : 'password'" v-model="formData.password_confirmation" name="confirm_password" autocomplete="confirm-password" required
+                                <input :type="showConfirmPassword ? 'text' : 'password'"
+                                    v-model="formData.password_confirmation" name="confirm_password"
+                                    autocomplete="confirm-password" required
                                     class="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm" />
-                                <svg @click="toggleConfirmPasswordVisibility" xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb"
-                                    class="w-[18px] h-[18px] absolute right-4 cursor-pointer" viewBox="0 0 128 128">
+                                <svg @click="toggleConfirmPasswordVisibility" xmlns="http://www.w3.org/2000/svg"
+                                    fill="#bbb" stroke="#bbb" class="w-[18px] h-[18px] absolute right-4 cursor-pointer"
+                                    viewBox="0 0 128 128">
                                     <path v-if="!showConfirmPassword"
                                         d="M64 104C22.127 104 1.367 67.496.504 65.943a4 4 0 0 1 0-3.887C1.367 60.504 22.127 24 64 24s62.633 36.504 63.496 38.057a4 4 0 0 1 0 3.887C126.633 67.496 105.873 104 64 104zM8.707 63.994C13.465 71.205 32.146 96 64 96c31.955 0 50.553-24.775 55.293-31.994C114.535 56.795 95.854 32 64 32 32.045 32 13.447 56.775 8.707 63.994zM64 88c-13.234 0-24-10.766-24-24s10.766-24 24-24 24 10.766 24 24-10.766 24-24 24zm0-40c-8.822 0-16 7.178-16 16s7.178 16 16 16 16-7.178 16-16-7.178-16-16-16z"
                                         data-original="#000000"></path>
@@ -205,9 +212,11 @@ const toggleConfirmPasswordVisibility = () => {
                         </div>
 
                         <div>
-                            <label for="phone-number" class="block text-sm font-medium text-gray-700">Phone Number (optional)</label>
+                            <label for="phone-number" class="block text-sm font-medium text-gray-700">Phone Number
+                                (optional)</label>
                             <div class="mt-1">
-                                <input v-model="formData.phone_number" name="phone_number" type="tel" class="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm" />
+                                <input v-model="formData.phone_number" name="phone_number" type="tel"
+                                    class="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm" />
                             </div>
                         </div>
 
