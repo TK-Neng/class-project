@@ -55,7 +55,8 @@ export default class BooksController {
                 // เพิ่มนามสกุลไฟล์เข้าไปในชื่อไฟล์
                 const fileName = `${data.title.toLowerCase()}.${image.extname}`
                 
-                await image.move("../public/images", {
+                // แก้ไขจาก "../public/images" เป็น path ที่ถูกต้อง
+                await image.move(path.join(process.cwd(), 'public', 'images'), {
                     name: fileName,
                     overwrite: true // This will overwrite existing files with the same name
                 })
@@ -113,6 +114,42 @@ export default class BooksController {
             console.error('Error fetching book image:', error)
             return response.notFound({
                 message: 'Book image not found',
+                errors: error.messages || error.message
+            })
+        }
+    }
+
+    async destroy({ auth, response, params }: HttpContext) {
+        try {
+            const user = auth.getUserOrFail()
+
+            // Check if user is admin
+            if (user.role !== 'ADMIN') {
+                return response.unauthorized({
+                    message: 'Only administrators can delete books'
+                })
+            }
+
+            const book = await Book.findOrFail(params.id)
+
+            // Delete book image if exists
+            const possibleExtensions = ['jpg', 'png', 'jpeg']
+            for (const ext of possibleExtensions) {
+                const imagePath = path.join(process.cwd(), 'public', 'images', `${book.title.toLowerCase()}.${ext}`)
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath)
+                    break
+                }
+            }
+
+            await book.delete()
+
+            return response.ok({
+                message: 'Book and its image deleted successfully'
+            })
+        } catch (error) {
+            return response.badRequest({
+                message: 'Failed to delete book',
                 errors: error.messages || error.message
             })
         }
