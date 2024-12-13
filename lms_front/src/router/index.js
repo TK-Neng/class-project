@@ -5,6 +5,7 @@ import Home from "../components/Home.vue";
 import Register from "../components/Register.vue";
 import { URL } from "../../composable/getUser";
 import AddBook from "../components/AddBook.vue";
+import DetailBook from "../components/DetailBook.vue";
 
 const routes = [
   {
@@ -40,6 +41,14 @@ const routes = [
     meta: {
       requiresAuth: true,
       requiresAuthRole: true,
+    },
+  },
+  {
+    path: "/book/:id",
+    name: "DetailBook",
+    component: DetailBook,
+    meta: {
+      requiresAuth: true,
     },
   },
 ];

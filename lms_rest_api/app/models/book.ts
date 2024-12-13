@@ -9,13 +9,16 @@ export default class Book extends BaseModel {
   declare title: string
 
   @column()
+  declare description: string
+
+  @column()
   declare author: string
 
   @column()
   declare genre: string
 
   @column()
-  declare isbn: string
+  declare year_publication: string
 
   @column()
   declare quantity: number
