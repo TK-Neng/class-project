@@ -1,40 +1,83 @@
 <script setup>
-import { onBeforeMount, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { URL } from '../../composable/getUser';
-import { useBookStore } from '../../stores/book';
-const book = useBookStore();
+// Imports จาก Vue
+import { onBeforeMount, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+
+// Imports จาก Store และ Composables
+import { useBookStore } from '../../stores/book'
+import { URL } from '../../composable/getUser'
+import { urlBook } from '../../composable/getBook'
+
+// ประกาศตัวแปรและ Store
+const book = useBookStore()
 const router = useRouter()
-const Role = ref('');
-onBeforeMount(async () => {
-  Role.value = await book.getRole();
-})
-const logout = async()=>{
+const Role = ref('')
+const searchQuery = ref('')
+const searchResults = ref([])
+const isSearching = ref(false)
+
+// ฟังก์ชันค้นหาหนังสือแบบ Real-time
+const quickSearch = async () => {
   try {
-    const res = await fetch(URL + `/logout`, {
-      method: 'POST',
+    isSearching.value = true
+    const response = await fetch(`${urlBook}/search?query=${encodeURIComponent(searchQuery.value)}`, {
+      method: 'GET',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      credentials: 'include', // เพื่อให้ส่งและรับคุกกี้
-    });
-    if (res.status === 200) {
-      // redirect ไปหน้า login
-      router.push({ name: 'Login' });
-    }
-  }
-  catch (error) {
-    console.log(error);
+      credentials: 'include'
+    })
+    
+    const data = await response.json()
+    searchResults.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('Search error:', error)
+    searchResults.value = []
+  } finally {
+    isSearching.value = false
   }
 }
 
-const createBook = () => {
-  router.push({ name: 'AddBook' });
+// ตั้งค่า Debounce สำหรับการค้นหา
+let searchTimeout
+watch(searchQuery, (newQuery) => {
+  clearTimeout(searchTimeout)
+  if (newQuery.trim()) {
+    searchTimeout = setTimeout(quickSearch, 300)
+  } else {
+    searchResults.value = []
+  }
+})
+
+// ฟังก์ชันนำทาง
+const goToBookDetail = (bookId) => {
+  router.push({ name: 'DetailBook', params: { id: bookId } })
+  searchQuery.value = ''
+  searchResults.value = []
 }
 
-const editUser = () => {
-  router.push({ name: 'EditUser' });
+const createBook = () => router.push({ name: 'AddBook' })
+const editUser = () => router.push({ name: 'EditUser' })
+
+// ฟังก์ชันจัดการผู้ใช้
+const logout = async () => {
+  try {
+    const res = await fetch(`${URL}/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    })
+    if (res.status === 200) router.push({ name: 'Login' })
+  } catch (error) {
+    console.error('Logout error:', error)
+  }
 }
+
+// ดึงข้อมูล Role เมื่อโหลดคอมโพเนนต์
+onBeforeMount(async () => {
+  Role.value = await book.getRole()
+})
 </script>
 
 <template>
@@ -46,15 +89,21 @@ const editUser = () => {
             </a>
         </div>
         <div class="flex-1 justify-center">
-            <div class="form-control">
-                <div class="join shadow-sm">
-                    <input type="text" placeholder="Search books..." 
-                           class="input input-bordered join-item w-[400px] focus:outline-none focus:border-cyan-300 transition-all" />
-                    <button class="btn join-item bg-cyan-600 hover:bg-cyan-700 text-white border-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
+            <div class="form-control relative">
+                <input type="text" 
+                       v-model="searchQuery"
+                       placeholder="Search books..." 
+                       class="input input-bordered w-[400px] focus:outline-none focus:border-cyan-300 transition-all rounded-lg" />
+                <!-- Search Results Dropdown -->
+                <div v-if="searchResults.length > 0" 
+                     class="absolute top-full mt-1 w-[400px] bg-white rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                    <div v-for="book in searchResults" 
+                         :key="book.id" 
+                         @click="goToBookDetail(book.bookId)"
+                         class="p-3 hover:bg-cyan-50 cursor-pointer border-b last:border-b-0">
+                        <div class="font-medium text-cyan-800">{{ book.title }}</div>
+                        <div class="text-sm text-gray-500">by {{ book.author }}</div>
+                    </div>
                 </div>
             </div>
         </div>

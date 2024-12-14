@@ -224,4 +224,33 @@ export default class BooksController {
             })
         }
     }
+
+    async quickSearch({ auth, request, response }: HttpContext) {
+        try {
+            await auth.getUserOrFail()
+            const query = request.input('query', '').trim()
+            
+            console.log('Received search query:', query)
+
+            if (!query) {
+                return response.ok([])
+            }
+
+            const books = await Book.query()
+                .whereILike('title', `%${query}%`)
+                .orWhereILike('author', `%${query}%`)
+                .limit(10)
+                .orderBy('title', 'asc')
+
+            console.log('Search results:', books)
+            
+            return response.ok(books)
+        } catch (error) {
+            console.error('Search error:', error)
+            return response.status(404).json({ 
+                error: 'Search failed',
+                message: error.message 
+            })
+        }
+    }
 }
