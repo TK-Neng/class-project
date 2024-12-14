@@ -60,6 +60,9 @@ const goToBookDetail = (bookId) => {
 const createBook = () => router.push({ name: 'AddBook' })
 const editUser = () => router.push({ name: 'EditUser' })
 
+// Add new navigation function
+const goToProfile = () => router.push({ name: 'Profile' })
+
 // ฟังก์ชันจัดการผู้ใช้
 const logout = async () => {
   try {
@@ -128,7 +131,7 @@ onBeforeMount(async () => {
                     <ul tabindex="0"
                         class="menu menu-sm dropdown-content bg-white rounded-xl z-[1] mt-3 w-52 p-2 shadow-xl">
                         <li>
-                            <a class="justify-between hover:bg-cyan-50 rounded-lg py-2 transition-colors duration-200">
+                            <a @click="goToProfile" class="justify-between hover:bg-cyan-50 rounded-lg py-2 transition-colors duration-200">
                                 Profile
                                 <span class="badge bg-cyan-500 text-white border-none">New</span>
                             </a>
