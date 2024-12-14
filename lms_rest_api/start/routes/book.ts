@@ -9,6 +9,7 @@ router.group(() => {
         router.get('/books', [BooksController, 'index']).as('index')
         router.get('/books/:id', [BooksController, 'show']).as('show')
         router.post('/books', [BooksController, 'store']).as('store')
+        router.put('/books/:id', [BooksController, 'update']).as('update')
         router.delete('/books/:id', [BooksController, 'destroy']).as('destroy')
     })
 }).prefix('/api').use(middleware.auth())

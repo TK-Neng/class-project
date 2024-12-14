@@ -154,4 +154,74 @@ export default class BooksController {
             })
         }
     }
+
+    async update({ auth, response, request, params }: HttpContext) {
+        try {
+            const user = auth.getUserOrFail()
+
+            if (user.role !== 'ADMIN') {
+                return response.unauthorized({
+                    message: 'Only administrators can update books'
+                })
+            }
+
+            const book = await Book.findOrFail(params.id)
+            const data = await bookValidator.validate(request.all())
+            const oldTitle = book.title.toLowerCase()
+            const newTitle = data.title.toLowerCase()
+
+            // Handle file upload
+            const image = request.file('image', {
+                extnames: ['jpg', 'png', 'jpeg'],
+                size: '2mb'
+            })
+
+            if (image) {
+                if (!image.isValid) {
+                    return response.badRequest(image.errors)
+                }
+
+                // Delete old image if exists
+                const possibleExtensions = ['jpg', 'png', 'jpeg']
+                for (const ext of possibleExtensions) {
+                    const oldImagePath = path.join(process.cwd(), 'public', 'images', `${oldTitle}.${ext}`)
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath)
+                        break
+                    }
+                }
+
+                // Save new image with new title
+                const fileName = `${newTitle}.${image.extname}`
+                await image.move(path.join(process.cwd(), 'public', 'images'), {
+                    name: fileName,
+                    overwrite: true
+                })
+            } else if (oldTitle !== newTitle) {
+                // If title changed but no new image, rename existing image
+                const possibleExtensions = ['jpg', 'png', 'jpeg']
+                for (const ext of possibleExtensions) {
+                    const oldImagePath = path.join(process.cwd(), 'public', 'images', `${oldTitle}.${ext}`)
+                    if (fs.existsSync(oldImagePath)) {
+                        const newImagePath = path.join(process.cwd(), 'public', 'images', `${newTitle}.${ext}`)
+                        fs.renameSync(oldImagePath, newImagePath)
+                        break
+                    }
+                }
+            }
+
+            book.merge(data)
+            await book.save()
+
+            return response.ok({
+                book,
+                message: 'Book updated successfully'
+            })
+        } catch (error) {
+            return response.badRequest({
+                message: 'Failed to update book',
+                errors: error.messages || error.message
+            })
+        }
+    }
 }

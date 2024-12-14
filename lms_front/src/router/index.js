@@ -51,6 +51,15 @@ const routes = [
       requiresAuth: true,
     },
   },
+  {
+    path: "/editbook/:id",
+    name: "EditBook",
+    component: AddBook,
+    meta: {
+      requiresAuth: true,
+      requiresAuthRole: true,
+    },
+  }
 ];
 
 const router = createRouter({ history, routes });

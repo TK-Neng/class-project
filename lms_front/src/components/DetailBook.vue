@@ -65,8 +65,8 @@ const confirmDelete = async () => {
     }
 };
 
-const editBook = () => {
-    router.push(`/edit-book/${bookId}`);
+const editBook = (bookId) => {
+    router.push({name: 'EditBook', query: { edit: true, id: bookId }});
 };
 </script>
 
@@ -178,12 +178,21 @@ const editBook = () => {
                                 <p class="text-gray-800 font-semibold text-lg mb-2">Author:</p>
                                 <p class="text-gray-700 text-lg">{{ book.author }}</p>
                             </div>
+                            <div v-if="isAdmin" class="border-t border-gray-200 pt-6 hover:bg-gray-50/50 transition-colors duration-200 rounded-lg p-4">
+                                <p class="text-gray-800 font-semibold text-lg mb-2">Quantity:</p>
+                                <p class="text-gray-700 text-lg">{{ book.quantity }}</p>
+                            </div>
+                            <div v-if="!isAdmin" class="border-t border-gray-200 pt-6 hover:bg-gray-50/50 transition-colors duration-200 rounded-lg p-4">
+                                <p class="text-gray-800 font-semibold text-lg mb-2">Status:</p>
+                                <p v-if="book.quantity > 0" class="text-green-600 text-lg">Available for borrowing</p>
+                                <p v-else class="text-red-600 text-lg">Full Borrow</p>
+                            </div>
                             <div class="flex space-x-6 pt-8">
-                                <button v-if="!isAdmin"
+                                <button v-if="!isAdmin && book.quantity > 0"
                                     class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2">
                                     Borrow
                                 </button>
-                                <button v-if="isAdmin" @click="editBook"
+                                <button v-if="isAdmin" @click="editBook(book.bookId)"
                                     class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2">
                                     Edit
                                 </button>
