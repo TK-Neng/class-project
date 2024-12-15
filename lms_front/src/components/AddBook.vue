@@ -3,18 +3,18 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Nav from './Nav.vue'
 import { urlBook } from '../../composable/getBook';
+import { getGenres } from '../../composable/getGenre';
 const router = useRouter()
 const route = useRoute()
 const error = ref('')
 const loading = ref(false)
-
 const step = ref(1) // Add this line
 
 const book = reactive({
     title: '',
     description: '',
     author: '',
-    genre: '',
+    genres: [], // Changed from genre to genres array
     year_publication: '',
     quantity: 0,
     image: null
@@ -45,61 +45,16 @@ const handleImageChange = (e) => {
     }
 }
 
-const genres = [
-    'Adult',
-    'Action',
-    'Adventure',
-    'Art',
-    'Biography',
-    'Business',
-    'Children',
-    'Christian',
-    'Classics',
-    'Comics',
-    'Contemporary',
-    'Cooking',
-    'Crime',
-    'Drama',
-    'Education',
-    'Epic',
-    'Fantasy',
-    'Fiction',
-    'Health',
-    'Historical Fiction',
-    'History',
-    'Horror',
-    'Humor',
-    'Literature',
-    'Mathematics',
-    'Medical',
-    'Memoir',
-    'Military',
-    'Music',
-    'Mystery',
-    'Non-Fiction',
-    'Parenting',
-    'Philosophy',
-    'Photography',
-    'Poetry',
-    'Political',
-    'Psychology',
-    'Religion',
-    'Romance',
-    'Science',
-    'Science Fiction',
-    'Self-Help',
-    'Short Stories',
-    'Sports',
-    'Technology',
-    'Travel',
-    'True Crime',
-    'Young Adult'
-]
+const genres = ref([])
 
 const isEditing = ref(false)
 const bookId = ref(null)
 
 onMounted(async () => {
+    const data = await getGenres()
+    for (const genre of data) {
+        genres.value.push(genre.name)
+    }
     if (route.query.edit && route.query.id) {
         isEditing.value = true
         bookId.value = route.query.id
@@ -112,11 +67,11 @@ onMounted(async () => {
             }
             const data = await res.json()
             console.log(data)
-            // Populate the book reactive object with fetched data
+            // Update to handle genres array
             book.title = data.title
             book.description = data.description
             book.author = data.author
-            book.genre = data.genre
+            book.genres = Array.isArray(data.genres) ? data.genres : [data.genre] // Handle both new and old format
             book.year_publication = data.yearPublication
             book.quantity = data.quantity
             imagePreview.value = `${urlBook}/image/${data.bookId}`
@@ -137,7 +92,10 @@ const handleSubmit = async () => {
         formData.append('title', book.title)
         formData.append('description', book.description)
         formData.append('author', book.author)
-        formData.append('genre', book.genre)
+        // Handle multiple genres
+        book.genres.forEach((genre, index) => {
+            formData.append(`genres[${index}]`, genre)
+        })
         formData.append('year_publication', book.year_publication)
         formData.append('quantity', book.quantity)
         if (book.image instanceof File) {
@@ -175,7 +133,7 @@ const errors = reactive({
     title: '',
     description: '',
     author: '',
-    genre: '',
+    genres: '', // Changed from genre to genres
     year_publication: '',
     quantity: '',
     image: ''
@@ -185,7 +143,7 @@ const validateStep1 = () => {
     let isValid = true
     errors.title = ''
     errors.author = ''
-    errors.genre = ''
+    errors.genres = ''
 
     if (!book.title || book.title.length < 3) {
         errors.title = 'Title must be at least 3 characters long'
@@ -203,8 +161,8 @@ const validateStep1 = () => {
         isValid = false
     }
 
-    if (!book.genre) {
-        errors.genre = 'Please select a genre'
+    if (!book.genres.length) {
+        errors.genres = 'Please select at least one genre'
         isValid = false
     }
 
@@ -280,6 +238,16 @@ const showAlert = (message) => {
         error.value = ''
     }, 3000)
 }
+
+// Add this method to handle genre selection
+const toggleGenre = (genre) => {
+    const index = book.genres.indexOf(genre)
+    if (index === -1) {
+        book.genres.push(genre)
+    } else {
+        book.genres.splice(index, 1)
+    }
+}
 </script>
 
 <template>
@@ -333,17 +301,42 @@ const showAlert = (message) => {
                                                class="px-4 py-2 transition duration-300 border border-gray-300 rounded focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-200">
                                         <p v-if="errors.author" class="text-red-500 text-xs mt-1">{{ errors.author }}</p>
                                     </div>
-                                    <div class="flex flex-col space-y-2">
-                                        <label class="text-sm font-medium text-gray-700">Genre</label>
-                                        <select v-model="book.genre" 
-                                                :class="{'border-red-500 focus:ring-red-200': errors.genre}"
-                                                class="px-4 py-2 transition duration-300 border border-gray-300 rounded focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-200">
-                                            <option value="" disabled selected>Select a genre</option>
-                                            <option v-for="genre in genres" :key="genre" :value="genre">
-                                                {{ genre }}
-                                            </option>
-                                        </select>
-                                        <p v-if="errors.genre" class="text-red-500 text-xs mt-1">{{ errors.genre }}</p>
+                                    <div class="md:col-span-2">
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">Genres</label>
+                                        <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                                <div v-for="genre in genres" 
+                                                    :key="genre" 
+                                                    @click="toggleGenre(genre)"
+                                                    :class="[
+                                                        'cursor-pointer px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-between',
+                                                        book.genres.includes(genre) 
+                                                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-2 border-blue-400'
+                                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-300'
+                                                    ]">
+                                                    <span>{{ genre }}</span>
+                                                    <svg v-if="book.genres.includes(genre)" 
+                                                        class="w-4 h-4 ml-2 text-blue-600" 
+                                                        fill="none" 
+                                                        stroke="currentColor" 
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" 
+                                                            stroke-linejoin="round" 
+                                                            stroke-width="2" 
+                                                            d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between">
+                                            <p v-if="errors.genres" 
+                                            class="text-red-500 text-xs">
+                                                {{ errors.genres }}
+                                            </p>
+                                            <p class="text-sm text-gray-500">
+                                                Selected: {{ book.genres.length }} genre(s)
+                                            </p>
+                                        </div>
                                     </div>
                                     <div class="md:col-span-2">
                                         <button type="button" @click="nextStep"

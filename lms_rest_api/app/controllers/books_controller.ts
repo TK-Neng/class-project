@@ -132,7 +132,6 @@ export default class BooksController {
       const stream = fs.createReadStream(filePath)
       return response.stream(stream)
     } catch (error) {
-      console.error('Error fetching book image:', error)
       return response.notFound({
         message: 'Book image not found',
         errors: error.messages || error.message,
@@ -261,8 +260,6 @@ export default class BooksController {
       await auth.getUserOrFail()
       const query = request.input('query', '').trim()
 
-      console.log('Received search query:', query)
-
       if (!query) {
         return response.ok([])
       }
@@ -272,12 +269,8 @@ export default class BooksController {
         .orWhereILike('author', `%${query}%`)
         .limit(10)
         .orderBy('title', 'asc')
-
-      console.log('Search results:', books)
-
       return response.ok(books)
     } catch (error) {
-      console.error('Search error:', error)
       return response.status(404).json({
         error: 'Search failed',
         message: error.message,
