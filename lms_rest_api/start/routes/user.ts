@@ -7,6 +7,7 @@ router.group(() => {
         router.post('/login', [UsersController, 'login']).as('login')
         router.post('/logout', [UsersController, 'logout']).as('logout')
         router.get('/auth/session', [UsersController, 'checkLogin']).as('checkLogin').use(middleware.auth())
+        router.get('/profile', [UsersController, 'getProfile']).as('getProfile').use(middleware.auth())
     }).prefix('/users')
 }).prefix('/api')
 

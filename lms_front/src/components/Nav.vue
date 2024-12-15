@@ -15,7 +15,7 @@ const Role = ref('')
 const searchQuery = ref('')
 const searchResults = ref([])
 const isSearching = ref(false)
-
+const userName = ref('')
 // ฟังก์ชันค้นหาหนังสือแบบ Real-time
 const quickSearch = async () => {
   try {
@@ -79,16 +79,18 @@ const logout = async () => {
 
 // ดึงข้อมูล Role เมื่อโหลดคอมโพเนนต์
 onBeforeMount(async () => {
-  Role.value = await book.getRole()
+  const data = await book.getRole()
+  Role.value = data.role
+  userName.value = data.username
 })
 </script>
 
 <template>
-    <div class="navbar bg-gradient-to-r from-cyan-50 to-cyan-100 shadow-md transition-all duration-300 px-6">
+    <div class="navbar bg-gradient-to-r from-cyan-50 to-cyan-100 shadow-lg transition-all duration-300 px-8 h-16">
         <div class="flex-1">
-            <a class="btn btn-ghost normal-case text-xl font-bold hover:bg-cyan-200 transition-colors duration-300" href="/home">
-              <img src="/book.png" alt="book" class="w-10 h-10 inline-block hover:scale-110 transition-transform duration-300" />
-              <span class="ml-2 text-cyan-800">LMS</span>
+            <a class="btn btn-ghost normal-case text-xl font-bold hover:bg-cyan-200/50 rounded-xl transition-all duration-300" href="/home">
+                <img src="/book.png" alt="book" class="w-8 h-8 inline-block hover:rotate-12 transition-all duration-300" />
+                <span class="ml-2 text-cyan-800 hover:text-cyan-600">LMS</span>
             </a>
         </div>
         <div class="flex-1 justify-center">
@@ -96,48 +98,54 @@ onBeforeMount(async () => {
                 <input type="text" 
                        v-model="searchQuery"
                        placeholder="Search books..." 
-                       class="input input-bordered w-[400px] focus:outline-none focus:border-cyan-300 transition-all rounded-lg" />
+                       class="input input-bordered w-[400px] bg-white/70 backdrop-blur-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-300/50 transition-all duration-300 rounded-xl shadow-sm" />
                 <!-- Search Results Dropdown -->
                 <div v-if="searchResults.length > 0" 
-                     class="absolute top-full mt-1 w-[400px] bg-white rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                     class="absolute top-full mt-2 w-[400px] bg-white/95 backdrop-blur-md rounded-xl shadow-xl z-50 max-h-[300px] overflow-y-auto border border-cyan-100">
                     <div v-for="book in searchResults" 
                          :key="book.id" 
                          @click="goToBookDetail(book.bookId)"
-                         class="p-3 hover:bg-cyan-50 cursor-pointer border-b last:border-b-0">
+                         class="p-3 hover:bg-cyan-50/80 cursor-pointer border-b border-cyan-100 last:border-b-0 transition-colors duration-200">
                         <div class="font-medium text-cyan-800">{{ book.title }}</div>
-                        <div class="text-sm text-gray-500">by {{ book.author }}</div>
+                        <div class="text-sm text-cyan-600/70">by {{ book.author }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="flex-1 justify-end">
-            <div class="flex gap-4 items-center">
+            <div class="flex gap-6 items-center">
                 <div v-if="Role === 'ADMIN'" class="dropdown dropdown-end">
-                    <div tabindex="0" role="button" class="btn btn-ghost hover:bg-cyan-200 transition-colors duration-300">
-                        <span class="text-cyan-800">Manage</span>
+                    <div tabindex="0" role="button" class="btn btn-ghost hover:bg-cyan-200/50 rounded-xl transition-all duration-300">
+                        <span class="text-cyan-800 font-medium">Manage</span>
                     </div>
-                    <ul tabindex="0" class="menu menu-sm dropdown-content bg-white rounded-xl z-[1] mt-3 w-52 p-2 shadow-xl">
-                        <li><a @click="createBook" class="hover:bg-cyan-50 rounded-lg py-2 transition-colors duration-200">Add Book</a></li>
-                        <li><a @click="editUser" class="hover:bg-cyan-50 rounded-lg py-2 transition-colors duration-200">Edit User</a></li>
+                    <ul tabindex="0" class="menu menu-sm dropdown-content bg-white/95 backdrop-blur-md rounded-xl z-[1] mt-3 w-52 p-2 shadow-xl border border-cyan-100">
+                        <li><a @click="createBook" class="hover:bg-cyan-50/80 rounded-lg py-3 transition-all duration-200 text-cyan-700">Add Book</a></li>
+                        <li><a @click="editUser" class="hover:bg-cyan-50/80 rounded-lg py-3 transition-all duration-200 text-cyan-700">Edit User</a></li>
                     </ul>
                 </div>
                 <div class="dropdown dropdown-end">
-                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar hover:scale-105 transition-transform duration-300">
-                        <div class="w-10 rounded-full ring ring-cyan-400 ring-offset-base-100 ring-offset-2">
-                            <img alt="User Avatar"
-                                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
-                        </div>
+                    <div tabindex="0" role="button" 
+                         class="btn btn-ghost hover:bg-cyan-100 rounded-xl transition-all duration-300 flex items-center gap-2 group">
+                        <span class="text-cyan-800 font-medium">{{ userName }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                             class="h-4 w-4 text-cyan-600 transform transition-all duration-200 ease-out group-hover:text-cyan-700 group-hover:-rotate-90 group-hover:scale-110" 
+                             fill="none" 
+                             viewBox="0 0 24 24" 
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <path stroke-linecap="round" 
+                                  stroke-linejoin="round" 
+                                  d="M15 19l-7-7 7-7" />
+                        </svg>
                     </div>
                     <ul tabindex="0"
-                        class="menu menu-sm dropdown-content bg-white rounded-xl z-[1] mt-3 w-52 p-2 shadow-xl">
+                        class="menu menu-sm dropdown-content bg-white/95 backdrop-blur-md rounded-xl z-[1] mt-3 w-52 p-2 shadow-xl border border-cyan-100">
                         <li>
-                            <a @click="goToProfile" class="justify-between hover:bg-cyan-50 rounded-lg py-2 transition-colors duration-200">
-                                Profile
-                                <span class="badge bg-cyan-500 text-white border-none">New</span>
+                            <a @click="goToProfile" class="flex items-center gap-2 hover:bg-cyan-50/80 rounded-lg py-3 transition-all duration-200 text-cyan-700">
+                                <span>Profile</span>
                             </a>
                         </li>
-                        <li><a class="hover:bg-cyan-50 rounded-lg py-2 transition-colors duration-200">Settings</a></li>
-                        <li><a @click="logout" class="hover:bg-red-50 rounded-lg py-2 transition-colors duration-200 text-red-600">Logout</a></li>
+                        <li><a @click="logout" class="flex items-center gap-2 hover:bg-red-50/80 rounded-lg py-3 transition-all duration-200 text-red-500 mt-1">Logout</a></li>
                     </ul>
                 </div>
             </div>

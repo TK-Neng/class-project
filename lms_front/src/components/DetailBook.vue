@@ -31,7 +31,7 @@ onBeforeMount(async () => {
     book.value = await getBookById(bookId);
     // Check if user is admin from localStorage or your auth store
     const user = await bookStore.getRole();
-    isAdmin.value = user === 'ADMIN';
+    isAdmin.value = user.role === 'ADMIN';
 });
 
 const goBack = () => {
