@@ -69,4 +69,13 @@ export default class UsersController {
         }
     }
 
+    async getProfile({ auth, response }: HttpContext) {
+        try {
+            const user = auth.user
+            return response.ok(user)
+        } catch (error) {
+            return response.badRequest(error.messages)
+        }
+    }
+
 }
