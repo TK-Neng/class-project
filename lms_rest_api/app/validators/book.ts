@@ -6,7 +6,6 @@ const schema = vine.object({
     description: vine.string().minLength(10).maxLength(1000),
     author: vine.string().minLength(2).maxLength(255)
         .regex(/^[a-zA-Z\s\-',.]+$/),
-    genre: vine.string().minLength(1).maxLength(100),
     year_publication: vine.string()
         .regex(/^\d{4}$/)
         .transform((value) => {
@@ -18,6 +17,7 @@ const schema = vine.object({
             return value
         }),
     quantity: vine.number().min(0).max(999),
+    genres: vine.array(vine.number().min(1)) // แก้ไขตรงนี้
 })
 
 export const bookValidator = vine.compile(schema)

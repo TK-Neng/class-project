@@ -1,16 +1,13 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'books'
+  protected tableName = 'book_genres'
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('book_id')
-      table.string('title', 255).notNullable()
-      table.string('description', 255).notNullable()
-      table.string('author').notNullable()
-      table.string('year_publication').notNullable()
-      table.integer('quantity').defaultTo(0)
+      table.increments('id')
+      table.integer('book_id').unsigned().references('books.book_id').onDelete('CASCADE')
+      table.integer('genre_id').unsigned().references('genres.genre_id').onDelete('CASCADE')
       table.timestamp('created_at')
       table.timestamp('updated_at')
     })

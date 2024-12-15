@@ -51,9 +51,17 @@ onBeforeMount(async () => {
         </figure>
         <div class="card-body items-center text-center p-4">
           <h2 class="card-title text-base font-semibold line-clamp-2 h-12 mb-2">{{ book.title }}</h2>
-          <span class="px-4 py-1.5 text-sm font-medium rounded-full text-white bg-cyan-500 shadow-sm mb-4">
-            {{ book.genre }}
-          </span>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <span v-for="(genre, index) in book.genres.slice(0, 2)" 
+                  :key="index"
+                  class="px-3 py-1 text-sm font-medium rounded-full text-white bg-cyan-500 shadow-sm">
+              {{ genre.name }}
+            </span>
+            <span v-if="book.genres.length > 2"
+                  class="px-3 py-1 text-sm font-medium rounded-full text-white bg-cyan-700 shadow-sm">
+              +{{ book.genres.length - 2 }}
+            </span>
+          </div>
         </div>
       </div>
     </div>

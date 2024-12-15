@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, manyToMany } from '@adonisjs/lucid/orm'
+import Genre from './genre.js'
+import type { ManyToMany } from '@adonisjs/lucid/types/relations'
 
 export default class Book extends BaseModel {
   @column({ isPrimary: true })
@@ -15,9 +17,6 @@ export default class Book extends BaseModel {
   declare author: string
 
   @column()
-  declare genre: string
-
-  @column()
   declare year_publication: string
 
   @column()
@@ -28,4 +27,14 @@ export default class Book extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @manyToMany(() => Genre, {
+    pivotTable: 'book_genres',
+    localKey: 'book_id',
+    pivotForeignKey: 'book_id',
+    relatedKey: 'genre_id', 
+    pivotRelatedForeignKey: 'genre_id',
+    pivotTimestamps: true,
+  })
+  declare genres: ManyToMany<typeof Genre>
 }

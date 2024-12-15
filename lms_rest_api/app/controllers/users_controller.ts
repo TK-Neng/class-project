@@ -60,7 +60,7 @@ export default class UsersController {
     async checkLogin({ auth, response }: HttpContext) {
         try {
             if (auth.user) {
-                return response.json({ authenticated: true, role: auth.user.role });
+                return response.json({ authenticated: true, role: auth.user.role , username: auth.user.username});
             }
             return response.json({ authenticated: false });
         }
@@ -72,7 +72,14 @@ export default class UsersController {
     async getProfile({ auth, response }: HttpContext) {
         try {
             const user = auth.user
-            return response.ok(user)
+            const data = {
+                first_name: user.first_name,
+                last_name: user.last_name,
+                username: user.username,
+                email: user.email,
+                phone_number: user.phone_number
+            }
+            return response.json(data)
         } catch (error) {
             return response.badRequest(error.messages)
         }
