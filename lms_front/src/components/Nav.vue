@@ -59,7 +59,7 @@ const goToBookDetail = (bookId) => {
 
 const createBook = () => router.push({ name: 'AddBook' })
 const editUser = () => router.push({ name: 'User' })
-
+const createGenre = () => router.push({ name: 'AddGenre' })
 // Add new navigation function
 const goToProfile = () => router.push({ name: 'Profile' })
 
@@ -120,6 +120,7 @@ onBeforeMount(async () => {
                     </div>
                     <ul tabindex="0" class="menu menu-sm dropdown-content bg-white/95 backdrop-blur-md rounded-xl z-[1] mt-3 w-52 p-2 shadow-xl border border-cyan-100">
                         <li><a @click="createBook" class="hover:bg-cyan-50/80 rounded-lg py-3 transition-all duration-200 text-cyan-700">Add Book</a></li>
+                        <li><a @click="createGenre" class="hover:bg-cyan-50/80 rounded-lg py-3 transition-all duration-200 text-cyan-700">Add Genre</a></li>
                         <li><a @click="editUser" class="hover:bg-cyan-50/80 rounded-lg py-3 transition-all duration-200 text-cyan-700">Edit User</a></li>
                     </ul>
                 </div>

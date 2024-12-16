@@ -71,7 +71,7 @@ export default class UsersController {
 
     async getProfile({ auth, response }: HttpContext) {
         try {
-            const user = auth.user
+            const user = await auth.getUserOrFail()
             const data = {
                 first_name: user.first_name,
                 last_name: user.last_name,
@@ -116,6 +116,20 @@ export default class UsersController {
                 message: 'ไม่สามารถอัพเดตข้อมูลได้',
                 error: error.message
             })
+        }
+    }
+
+    async getAllUsers({ auth, response }: HttpContext) {
+        try {
+            const user = await auth.getUserOrFail()
+            if (user.role !== Role.ADMIN) {
+                return response.unauthorized('Only admins can view all users')
+            }
+
+            const users = await User.query().orderBy('role', 'asc').orderBy('created_at', 'desc')
+            return response.ok(users)
+        } catch (error) {
+            return response.badRequest(error.messages)
         }
     }
 

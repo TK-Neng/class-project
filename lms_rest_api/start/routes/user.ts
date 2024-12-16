@@ -9,6 +9,7 @@ router.group(() => {
         router.get('/auth/session', [UsersController, 'checkLogin']).as('checkLogin').use(middleware.auth())
         router.get('/profile', [UsersController, 'getProfile']).as('getProfile').use(middleware.auth())
         router.put('/profile', [UsersController, 'updateProfile']).as('updateProfile').use(middleware.auth())
+        router.get('/allusers', [UsersController, 'getAllUsers']).as('getAllUsers').use(middleware.auth())
     }).prefix('/users')
 }).prefix('/api')
 

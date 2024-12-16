@@ -8,13 +8,14 @@ import AddBook from "../components/AddBook.vue";
 import DetailBook from "../components/DetailBook.vue";
 import Profile from "../components/Profile.vue";
 import User from "../components/User.vue";
+import AddGenre from "../components/AddGenre.vue";
 const routes = [
   {
     path: "/",
     redirect: "/login", // Redirect ไปที่ path /home
   },
   {
-    path: '/:pathMatch(.*)*',
+    path: "/:pathMatch(.*)*",
     redirect: "/login", // Redirect ไปที่ path /home
   },
   {
@@ -68,10 +69,20 @@ const routes = [
     meta: {
       requiresAuth: true,
     },
-  },{
+  },
+  {
     path: "/user",
     name: "User",
     component: User,
+    meta: {
+      requiresAuth: true,
+      requiresAuthRole: true,
+    },
+  },
+  {
+    path: "/addgenre",
+    name: "AddGenre",
+    component: AddGenre,
     meta: {
       requiresAuth: true,
       requiresAuthRole: true,
@@ -110,13 +121,13 @@ router.beforeEach(async (to, from, next) => {
       next("/login");
       return;
     }
-    
+
     if (to.meta.requiresAuthRole && role !== "ADMIN") {
       alert("Access denied. Admin privileges required.");
       next("/home");
       return;
     }
-    
+
     next();
   } else if (to.name === "Login" && authenticated) {
     next("/home");

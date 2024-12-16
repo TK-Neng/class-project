@@ -1,12 +1,11 @@
 <script setup>
 import Nav from './Nav.vue';
-import { ref } from 'vue';
-
-const users = ref([
-  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Student' },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Teacher' },
-  // Add more mock data as needed
-]);
+import { ref, onBeforeMount } from 'vue';
+import { getAllUsers } from '../../composable/getUser'
+const users = ref();
+onBeforeMount(async () => {
+  users.value = await getAllUsers();
+});
 </script>
 
 <template>
@@ -24,7 +23,7 @@ const users = ref([
             </div>
             <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
               <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                Add User
+                Add New Admin
               </button>
             </div>
           </div>
@@ -41,7 +40,7 @@ const users = ref([
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="user in users" :key="user.id">
-                  <td class="px-6 py-4 whitespace-nowrap">{{ user.name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">{{ user.firstName }} {{ user.lastName }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">{{ user.email }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"

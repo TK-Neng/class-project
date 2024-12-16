@@ -21,5 +21,25 @@ const getProfile = async () => {
     }
 }
 
+const getAllUsers = async () => {
+    try{
+        const res = await fetch(URL+'/allusers', {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        });
+        if(res.ok){
+            const data = await res.json();
+            return data;
+        } else {
+            throw new error("Error, can't get data");
+        }
+    } catch{
+        console.error(err);
+    }
+}
 
-export { URL, getProfile };
+
+export { URL, getProfile, getAllUsers };

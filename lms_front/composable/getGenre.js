@@ -1,7 +1,7 @@
 const API_ROOT = import.meta.env.VITE_API_ROOT;
 const urlGenre = `${API_ROOT}/api/genres`;
 
-export const getGenres = async () => {
+const getGenres = async () => {
     try {
         const res = await fetch(urlGenre, {
             method: "GET",
@@ -16,7 +16,6 @@ export const getGenres = async () => {
         }
         
         const data = await res.json();
-        console.log('Genres API response:', data); // Debug log
         
         if (!Array.isArray(data)) {
             console.error('Expected array of genres but got:', typeof data);
@@ -29,3 +28,6 @@ export const getGenres = async () => {
         throw err;
     }
 };
+
+
+export { urlGenre, getGenres };
