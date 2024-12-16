@@ -58,7 +58,7 @@ const goToBookDetail = (bookId) => {
 }
 
 const createBook = () => router.push({ name: 'AddBook' })
-const editUser = () => router.push({ name: 'EditUser' })
+const editUser = () => router.push({ name: 'User' })
 
 // Add new navigation function
 const goToProfile = () => router.push({ name: 'Profile' })

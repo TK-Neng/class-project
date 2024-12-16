@@ -7,6 +7,7 @@ import { URL } from "../../composable/getUser";
 import AddBook from "../components/AddBook.vue";
 import DetailBook from "../components/DetailBook.vue";
 import Profile from "../components/Profile.vue";
+import User from "../components/User.vue";
 const routes = [
   {
     path: "/",
@@ -66,6 +67,14 @@ const routes = [
     component: Profile,
     meta: {
       requiresAuth: true,
+    },
+  },{
+    path: "/user",
+    name: "User",
+    component: User,
+    meta: {
+      requiresAuth: true,
+      requiresAuthRole: true,
     },
   }
 ];
