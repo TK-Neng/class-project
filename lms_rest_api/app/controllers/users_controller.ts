@@ -1,5 +1,5 @@
 import User from '#models/user'
-import { registerUserValidator } from '#validators/user'
+import { registerUserValidator , updateProfileValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import Role from '../../contract/Role.js'
 
@@ -82,6 +82,40 @@ export default class UsersController {
             return response.json(data)
         } catch (error) {
             return response.badRequest(error.messages)
+        }
+    }
+
+    async updateProfile({ auth, request, response }: HttpContext) {
+        try {
+            const user = auth.user!
+            const data = await request.validateUsing(updateProfileValidator)
+            
+            // แปลง empty string เป็น null สำหรับ phone_number
+            if (data.phone_number === '') {
+                data.phone_number = null
+            }
+
+            await user.merge(data).save()
+            
+            return response.ok({
+                username: user.username,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email,
+                phone_number: user.phone_number
+            })
+        } catch (error) {
+            console.error('Update Profile Error:', error)
+            if (error.messages) {
+                return response.badRequest({
+                    message: 'ข้อมูลไม่ถูกต้อง',
+                    errors: error.messages
+                })
+            }
+            return response.badRequest({
+                message: 'ไม่สามารถอัพเดตข้อมูลได้',
+                error: error.message
+            })
         }
     }
 

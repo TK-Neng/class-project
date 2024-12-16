@@ -1,8 +1,8 @@
 const API_ROOT = import.meta.env.VITE_API_ROOT;
 const urlGenre = `${API_ROOT}/api/genres`;
 
-const getGenres = async ()=>{
-    try{
+export const getGenres = async () => {
+    try {
         const res = await fetch(urlGenre, {
             method: "GET",
             headers: {
@@ -10,15 +10,22 @@ const getGenres = async ()=>{
             },
             credentials: "include",
         });
-        if(res.ok){
-            const data = await res.json();
-            return data;
-        } else {
-            throw new error("Error, can't get data");
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
         }
-    } catch{
-        console.error(err);
+        
+        const data = await res.json();
+        console.log('Genres API response:', data); // Debug log
+        
+        if (!Array.isArray(data)) {
+            console.error('Expected array of genres but got:', typeof data);
+            return [];
+        }
+        
+        return data;
+    } catch (err) {
+        console.error('Error in getGenres:', err);
+        throw err;
     }
-}
-
-export { getGenres };
+};

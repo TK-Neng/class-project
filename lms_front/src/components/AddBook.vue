@@ -14,7 +14,7 @@ const book = reactive({
     title: '',
     description: '',
     author: '',
-    genres: [], // Changed from genre to genres array
+    genres: [], // Will now store genre IDs instead of names
     year_publication: '',
     quantity: 0,
     image: null
@@ -45,39 +45,59 @@ const handleImageChange = (e) => {
     }
 }
 
-const genres = ref([])
+const genres = ref([]) // Will now store objects with id and name
 
 const isEditing = ref(false)
 const bookId = ref(null)
 
 onMounted(async () => {
-    const data = await getGenres()
-    for (const genre of data) {
-        genres.value.push(genre.name)
-    }
-    if (route.query.edit && route.query.id) {
-        isEditing.value = true
-        bookId.value = route.query.id
-        try {
-            const res = await fetch(`${urlBook}/${bookId.value}`, {
-                credentials: "include"
-            })
-            if (!res.ok) {
-                throw new Error('Failed to fetch book details')
-            }
-            const data = await res.json()
-            console.log(data)
-            // Update to handle genres array
-            book.title = data.title
-            book.description = data.description
-            book.author = data.author
-            book.genres = Array.isArray(data.genres) ? data.genres : [data.genre] // Handle both new and old format
-            book.year_publication = data.yearPublication
-            book.quantity = data.quantity
-            imagePreview.value = `${urlBook}/image/${data.bookId}`
-        } catch (err) {
-            error.value = err.message
+    try {
+        const data = await getGenres()
+        console.log('All genres:', data)
+        if (Array.isArray(data)) {
+            genres.value = data.map(genre => ({
+                id: genre.genreId || genre.id, // รองรับทั้ง genreId และ id
+                name: genre.name
+            }))
         }
+
+        // ถ้าเป็นโหมด edit
+        if (route.query.edit && route.query.id) {
+            isEditing.value = true
+            bookId.value = route.query.id
+            try {
+                const res = await fetch(`${urlBook}/${bookId.value}`, {
+                    credentials: "include"
+                })
+                if (!res.ok) {
+                    throw new Error('Failed to fetch book details')
+                }
+                const data = await res.json()
+                console.log('Book edit data:', data)
+
+                book.title = data.title
+                book.description = data.description
+                book.author = data.author
+                book.year_publication = data.yearPublication
+                book.quantity = data.quantity
+                imagePreview.value = `${urlBook}/image/${data.bookId}`
+
+                // จัดการ genres ใหม่
+                if (data.genres && Array.isArray(data.genres)) {
+                    book.genres = data.genres.map(g => g.genreId || g.id)
+                } else if (data.genre) {
+                    // กรณีเป็น single genre
+                    book.genres = [data.genre.genreId || data.genre.id]
+                }
+                
+                console.log('Selected genre IDs:', book.genres)
+            } catch (err) {
+                console.error('Error fetching book:', err)
+                error.value = err.message
+            }
+        }
+    } catch (error) {
+        console.error('Error in onMounted:', error)
     }
 })
 
@@ -92,16 +112,16 @@ const handleSubmit = async () => {
         formData.append('title', book.title)
         formData.append('description', book.description)
         formData.append('author', book.author)
-        // Handle multiple genres
-        book.genres.forEach((genre, index) => {
-            formData.append(`genres[${index}]`, genre)
+        // Send genre IDs
+        book.genres.forEach((genreId, index) => {
+            formData.append(`genres[${index}]`, genreId)
         })
         formData.append('year_publication', book.year_publication)
         formData.append('quantity', book.quantity)
         if (book.image instanceof File) {
             formData.append('image', book.image)
         }
-
+        console.log([...formData])
         const url = isEditing.value ? `${urlBook}/${bookId.value}` : urlBook
         const method = isEditing.value ? 'PUT' : 'POST'
 
@@ -239,11 +259,11 @@ const showAlert = (message) => {
     }, 3000)
 }
 
-// Add this method to handle genre selection
-const toggleGenre = (genre) => {
-    const index = book.genres.indexOf(genre)
+// Modified to handle genre IDs
+const toggleGenre = (genreId) => {
+    const index = book.genres.indexOf(genreId)
     if (index === -1) {
-        book.genres.push(genre)
+        book.genres.push(genreId)
     } else {
         book.genres.splice(index, 1)
     }
@@ -304,27 +324,36 @@ const toggleGenre = (genre) => {
                                     <div class="md:col-span-2">
                                         <label class="text-sm font-medium text-gray-700 mb-2 block">Genres</label>
                                         <div class="border border-gray-300 rounded-lg p-4 bg-white">
-                                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                                                 <div v-for="genre in genres" 
-                                                    :key="genre" 
-                                                    @click="toggleGenre(genre)"
+                                                    :key="genre.id"
+                                                    @click="toggleGenre(genre.id)"
+                                                    class="cursor-pointer relative group p-3 rounded-lg text-sm transition-all duration-200 hover:shadow-md"
                                                     :class="[
-                                                        'cursor-pointer px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-between',
-                                                        book.genres.includes(genre) 
-                                                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-2 border-blue-400'
-                                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-300'
+                                                        book.genres.includes(genre.id) 
+                                                            ? 'bg-blue-50 ring-2 ring-blue-400 text-blue-700'
+                                                            : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
                                                     ]">
-                                                    <span>{{ genre }}</span>
-                                                    <svg v-if="book.genres.includes(genre)" 
-                                                        class="w-4 h-4 ml-2 text-blue-600" 
-                                                        fill="none" 
-                                                        stroke="currentColor" 
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" 
-                                                            stroke-linejoin="round" 
-                                                            stroke-width="2" 
-                                                            d="M5 13l4 4L19 7" />
-                                                    </svg>
+                                                    <div class="flex items-center space-x-2">
+                                                        <div class="flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center"
+                                                            :class="[
+                                                                book.genres.includes(genre.id)
+                                                                    ? 'border-blue-500 bg-blue-500'
+                                                                    : 'border-gray-400 group-hover:border-gray-500'
+                                                            ]">
+                                                            <svg v-if="book.genres.includes(genre.id)" 
+                                                                class="w-3 h-3 text-white" 
+                                                                fill="none" 
+                                                                stroke="currentColor" 
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" 
+                                                                    stroke-linejoin="round" 
+                                                                    stroke-width="2" 
+                                                                    d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        </div>
+                                                        <span class="font-medium">{{ genre.name }}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -454,3 +483,9 @@ const toggleGenre = (genre) => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.group:hover {
+  transform: translateY(-1px);
+}
+</style>

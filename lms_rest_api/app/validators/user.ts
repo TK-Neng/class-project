@@ -20,3 +20,15 @@ const schema = vine.object({
 })
 
 export const registerUserValidator = vine.compile(schema)
+
+const updateProfileSchema = vine.object({
+  first_name: vine.string().trim().minLength(2).maxLength(50),
+  last_name: vine.string().trim().minLength(2).maxLength(50),
+  email: vine.string().email(),
+  phone_number: vine.string().trim()
+    .regex(/^[0-9]{10}$/)
+    .nullable() // อนุญาตให้เป็น null ได้
+    .optional() // ไม่จำเป็นต้องส่งมา
+})
+
+export const updateProfileValidator = vine.compile(updateProfileSchema)
