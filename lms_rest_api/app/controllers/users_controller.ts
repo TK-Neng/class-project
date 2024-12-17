@@ -242,7 +242,7 @@ export default class UsersController {
             if (currentUser.role === Role.ADMIN) {
                 // Get user to be deleted
                 const userToDelete = await User.findOrFail(id)
-                
+
                 // Check if trying to delete non-USER role
                 if (userToDelete.role !== Role.USER) {
                     return response.unauthorized('Admins can only delete regular users')
@@ -253,7 +253,7 @@ export default class UsersController {
                     .where('user_id', id)
                     .where('role', Role.USER)
                     .delete()
-                    
+
                 return response.ok({ message: 'User deleted successfully' })
             }
         } catch (error) {
