@@ -41,8 +41,8 @@ export default class BooksController {
     try {
       const user = auth.getUserOrFail()
 
-      // Check if user is admin
-      if (user.role !== 'ADMIN') {
+      // Check if user is admin or owner
+      if (user.role !== 'ADMIN' && user.role !== 'OWNER') {
         return response.unauthorized({
           message: 'Only administrators can create books',
         })
@@ -143,8 +143,8 @@ export default class BooksController {
     try {
       const user = auth.getUserOrFail()
 
-      // Check if user is admin
-      if (user.role !== 'ADMIN') {
+      // Check if user is admin or owner
+      if (user.role !== 'ADMIN' && user.role !== 'OWNER') {
         return response.unauthorized({
           message: 'Only administrators can delete books',
         })
@@ -185,7 +185,7 @@ export default class BooksController {
     try {
       const user = auth.getUserOrFail()
 
-      if (user.role !== 'ADMIN') {
+      if (user.role !== 'ADMIN' && user.role !== 'OWNER') {
         return response.unauthorized({
           message: 'Only administrators can update books',
         })

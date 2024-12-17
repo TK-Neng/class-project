@@ -142,7 +142,7 @@ router.beforeEach(async (to, from, next) => {
       return;
     }
 
-    if (to.meta.requiresAuthRole && role !== "ADMIN") {
+    if (to.meta.requiresAuthRole && role !== "ADMIN" && role !== "OWNER") {
       alert("Access denied. Admin privileges required.");
       next("/home");
       return;

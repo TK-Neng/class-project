@@ -31,8 +31,8 @@ export default class UsersController {
     async registerAdmin({ request, response, auth }: HttpContext) {
         try {
             const user = auth.getUserOrFail()
-            if (user.role !== Role.ADMIN) {
-                return response.unauthorized('Only admins can create admin accounts')
+            if (user.role !== Role.OWNER) {
+                return response.unauthorized('Only owner can create admin accounts')
             }
 
             const payload = await request.validateUsing(registerUserValidator)
@@ -122,22 +122,35 @@ export default class UsersController {
     async getAllUsers({ auth, response }: HttpContext) {
         try {
             const user = await auth.getUserOrFail()
-            if (user.role !== Role.ADMIN) {
-                return response.unauthorized('Only admins can view all users')
-            } else {
+            if (user.role !== Role.ADMIN && user.role !== Role.OWNER) {
+                return response.unauthorized('Only admins and owners can view users')
+            }
+
+            // Owner can see all users
+            if (user.role === Role.OWNER) {
                 const users = await User.query()
-                    .where((query) => {
-                        query.where('role', '=', Role.USER)
-                            .orWhere((subQuery) => {
-                                subQuery
-                                    .where('role', '=', Role.ADMIN)
-                                    .where('username', '=', user.username)
-                            })
-                    })
-                    .orderBy('role', 'asc')
+                    .orderByRaw(`CASE 
+                        WHEN role = 'OWNER' THEN 1
+                        WHEN role = 'ADMIN' THEN 2
+                        ELSE 3
+                    END`)
                     .orderBy('created_at', 'desc')
                 return response.ok(users)
             }
+
+            // Admin can only see regular users and themselves
+            const users = await User.query()
+                .where((query) => {
+                    query.where('role', '=', Role.USER)
+                        .orWhere((subQuery) => {
+                            subQuery
+                                .where('role', '=', Role.ADMIN)
+                                .where('username', '=', user.username)
+                        })
+                })
+                .orderBy('role', 'asc')
+                .orderBy('created_at', 'desc')
+            return response.ok(users)
         } catch (error) {
             return response.badRequest(error.messages)
         }
@@ -146,7 +159,7 @@ export default class UsersController {
     async getUser({ auth, response, params }: HttpContext) {
         try {
             const user = await auth.getUserOrFail()
-            if (user.role !== Role.ADMIN) {
+            if (user.role !== Role.ADMIN && user.role !== Role.OWNER) {
                 return response.unauthorized('Only admins can view all users')
             }
 
@@ -161,7 +174,7 @@ export default class UsersController {
     async editUser({ auth, request, response }: HttpContext) {
         try {
             const user = await auth.getUserOrFail()
-            if (user.role !== Role.ADMIN) {
+            if (user.role !== Role.ADMIN && user.role !== Role.OWNER) {
                 return response.unauthorized('Only admins can edit users')
             }
 
@@ -204,16 +217,45 @@ export default class UsersController {
         }
     }
 
-    async deleteUser({ auth, response, request }: HttpContext) {
+    async deleteUser({ auth, response, params }: HttpContext) {
         try {
-            const user = await auth.getUserOrFail()
-            if (user.role !== Role.ADMIN) {
-                return response.unauthorized('Only admins can delete users')
-            }
-            const { id } = request.all()
-            await User.query().whereIn('id', id).delete()
+            const currentUser = await auth.getUserOrFail()
+            const { id } = params
 
-            return response.ok({ message: 'Users deleted successfully' })
+            // Check basic authorization
+            if (currentUser.role !== Role.ADMIN && currentUser.role !== Role.OWNER) {
+                return response.unauthorized('Only admins and owners can delete users')
+            }
+
+            // For OWNER role
+            if (currentUser.role === Role.OWNER) {
+                // Prevent owner from deleting themselves
+                if (id === currentUser.user_id) {
+                    return response.badRequest('Cannot delete your own account')
+                }
+                // Owner can delete anyone except themselves
+                await User.query().where('user_id', id).delete()
+                return response.ok({ message: 'User deleted successfully' })
+            }
+
+            // For ADMIN role
+            if (currentUser.role === Role.ADMIN) {
+                // Get user to be deleted
+                const userToDelete = await User.findOrFail(id)
+                
+                // Check if trying to delete non-USER role
+                if (userToDelete.role !== Role.USER) {
+                    return response.unauthorized('Admins can only delete regular users')
+                }
+
+                // Delete only USER role account
+                await User.query()
+                    .where('user_id', id)
+                    .where('role', Role.USER)
+                    .delete()
+                    
+                return response.ok({ message: 'User deleted successfully' })
+            }
         } catch (error) {
             return response.badRequest(error.messages)
         }

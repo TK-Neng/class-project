@@ -29,9 +29,9 @@ const showNotification = (type, message) => {
 
 onBeforeMount(async () => {
     book.value = await getBookById(bookId);
-    // Check if user is admin from localStorage or your auth store
+    // Check if user is admin or owner
     const user = await bookStore.getRole();
-    isAdmin.value = user.role === 'ADMIN';
+    isAdmin.value = user.role === 'ADMIN' || user.role === 'OWNER';
 });
 
 const goBack = () => {

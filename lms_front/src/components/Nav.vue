@@ -123,7 +123,7 @@ onBeforeMount(async () => {
         </div>
         <div class="flex-1 justify-end">
             <div class="flex gap-6 items-center">
-                <div v-if="Role === 'ADMIN'" class="dropdown dropdown-end">
+                <div v-if="Role === 'ADMIN' || Role === 'OWNER'" class="dropdown dropdown-end">
                     <div tabindex="0" role="button" class="btn btn-ghost hover:bg-cyan-200/50 rounded-xl transition-all duration-300">
                         <span class="text-cyan-800 font-medium">Manage</span>
                     </div>
