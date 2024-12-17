@@ -32,3 +32,14 @@ const updateProfileSchema = vine.object({
 })
 
 export const updateProfileValidator = vine.compile(updateProfileSchema)
+
+
+const editUserSchema = vine.object({
+    username: vine.string().minLength(3).maxLength(255).unique(async (db, value, field) => {
+        const user = await db.from('users').where('username', value).first()
+        return !user
+    }).optional(),
+    password: vine.string().minLength(6).confirmed().optional(),
+})
+
+export const editUserValidator = vine.compile(editUserSchema)

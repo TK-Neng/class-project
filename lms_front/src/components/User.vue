@@ -2,10 +2,15 @@
 import Nav from './Nav.vue';
 import { ref, onBeforeMount } from 'vue';
 import { getAllUsers } from '../../composable/getUser'
+import { useRouter } from 'vue-router';
+const router = useRouter();
 const users = ref();
 onBeforeMount(async () => {
   users.value = await getAllUsers();
 });
+const goToEdit = (id) => {
+  router.push({ name: 'EditUser', params: { id: id } });
+}
 </script>
 
 <template>
@@ -49,7 +54,7 @@ onBeforeMount(async () => {
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <button class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                    <button class="text-indigo-600 hover:text-indigo-900 mr-3" @click="goToEdit(user.userId)">Edit</button>
                     <button class="text-red-600 hover:text-red-900">Delete</button>
                   </td>
                 </tr>

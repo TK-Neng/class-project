@@ -9,6 +9,8 @@ import DetailBook from "../components/DetailBook.vue";
 import Profile from "../components/Profile.vue";
 import User from "../components/User.vue";
 import AddGenre from "../components/AddGenre.vue";
+import EditUser from "../components/EditUser.vue";
+import AddAdmin from "../components/AddAdmin.vue";
 const routes = [
   {
     path: "/",
@@ -83,6 +85,24 @@ const routes = [
     path: "/addgenre",
     name: "AddGenre",
     component: AddGenre,
+    meta: {
+      requiresAuth: true,
+      requiresAuthRole: true,
+    },
+  },
+  {
+    path: "/edituser/:id",
+    name: "EditUser",
+    component: EditUser,
+    meta: {
+      requiresAuth: true,
+      requiresAuthRole: true,
+    },
+  },
+  {
+    path: "/addadmin",
+    name: "AddAdmin",
+    component: AddAdmin,
     meta: {
       requiresAuth: true,
       requiresAuthRole: true,

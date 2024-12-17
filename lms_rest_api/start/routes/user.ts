@@ -6,15 +6,18 @@ router.group(() => {
         router.post('/register', [UsersController, 'register']).as('register')
         router.post('/login', [UsersController, 'login']).as('login')
         router.post('/logout', [UsersController, 'logout']).as('logout')
-        router.get('/auth/session', [UsersController, 'checkLogin']).as('checkLogin').use(middleware.auth())
-        router.get('/profile', [UsersController, 'getProfile']).as('getProfile').use(middleware.auth())
-        router.put('/profile', [UsersController, 'updateProfile']).as('updateProfile').use(middleware.auth())
-        router.get('/allusers', [UsersController, 'getAllUsers']).as('getAllUsers').use(middleware.auth())
+        router.post('/verify',[UsersController,'verifyUsername']).as('users.verify')
+        router.group(() => {
+            router.get('/auth/session', [UsersController, 'checkLogin']).as('checkLogin')
+            router.get('/profile', [UsersController, 'getProfile']).as('getProfile')
+            router.put('/profile', [UsersController, 'updateProfile']).as('updateProfile')
+            router.get('/allusers', [UsersController, 'getAllUsers']).as('getAllUsers')
+            router.get('/show/:id', [UsersController, 'getUser']).as('showUser')
+            router.put('/edit/:id', [UsersController, 'editUser']).as('editUser')
+            router.delete('/delete/:id', [UsersController, 'deleteUser']).as('deleteUser')
+        }).use(middleware.auth())
     }).prefix('/users')
-}).prefix('/api')
-
-router.group(() => {
     router.group(() => {
-        router.post('/register', [UsersController, 'registerAdmin']).as('registerAdmin').use(middleware.auth())
-    }).prefix('/admin')
+        router.post('/register', [UsersController, 'registerAdmin']).as('registerAdmin')
+    }).prefix('/admin').use(middleware.auth())
 }).prefix('/api')

@@ -50,9 +50,18 @@ watch(searchQuery, (newQuery) => {
   }
 })
 
-// ฟังก์ชันนำทาง
-const goToBookDetail = (bookId) => {
-  router.push({ name: 'DetailBook', params: { id: bookId } })
+// ปรับปรุงฟังก์ชันนำทาง
+const goToBookDetail = async (bookId) => {
+  const currentRoute = router.currentRoute.value
+  if (currentRoute.name === 'DetailBook') {
+    // ถ้าอยู่ที่หน้า DetailBook อยู่แล้ว ให้ใช้ replace แทน push
+    await router.replace({ name: 'DetailBook', params: { id: bookId } })
+    // Reload component by forcing a refresh
+    window.location.reload()
+  } else {
+    // ถ้าอยู่หน้าอื่น ให้ใช้ push ตามปกติ
+    await router.push({ name: 'DetailBook', params: { id: bookId } })
+  }
   searchQuery.value = ''
   searchResults.value = []
 }
