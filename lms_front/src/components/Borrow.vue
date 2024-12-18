@@ -21,9 +21,9 @@ const showToast = (message, type = 'success') => {
     }, 3000);
 };
 
-const goToReturn = async(borrow_id, user_id) => {
+const goToReturn = async (borrow_id, user_id) => {
     if (!confirm('คุณแน่ใจหรือไม่ที่จะคืนหนังสือเล่มนี้?')) return;
-    
+
     loading.value[borrow_id] = true;
     try {
         const res = await fetch(urlBorrow, {
@@ -88,16 +88,33 @@ const showSendMailButton = (item) => {
 const hasData = (data) => {
     return data && data.length > 0;
 };
+
+const sendOverdueNotification = async (borrowId) => {
+    loading.value[borrowId] = true;
+    try {
+        const res = await fetch(`${urlBorrow}/notify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ borrow_id: borrowId }),
+        });
+
+        if (!res.ok) throw new Error();
+        showToast('ส่งอีเมลแจ้งเตือนเรียบร้อยแล้ว');
+    } catch (error) {
+        showToast('เกิดข้อผิดพลาดในการส่งอีเมล', 'error');
+    } finally {
+        loading.value[borrowId] = false;
+    }
+};
 </script>
 
 <template>
     <Nav />
-    <div v-if="toast.show" 
-         :class="[
-             'fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg transition-all duration-300 z-50',
-             toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-         ]"
-    >
+    <div v-if="toast.show" :class="[
+        'fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg transition-all duration-300 z-50',
+        toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    ]">
         <p class="text-white font-medium">{{ toast.message }}</p>
     </div>
     <div class="min-h-screen bg-gray-100">
@@ -117,9 +134,12 @@ const hasData = (data) => {
                             <tr class="bg-gray-50">
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Book Title</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrow Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Book Title
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrow Date
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
@@ -139,7 +159,7 @@ const hasData = (data) => {
                                 <td class="px-6 py-4 space-x-2">
                                     <div class="flex gap-2">
                                         <button v-if="showSendMailButton(item)"
-                                            @click=""
+                                            @click="sendOverdueNotification(item.borrowId)"
                                             class="inline-flex items-center justify-center bg-red-500 hover:bg-red-600 
                                                 text-white px-4 py-2 rounded-lg text-sm transition duration-300 min-w-[120px]">
                                             Send Mail
@@ -149,17 +169,22 @@ const hasData = (data) => {
                                             :disabled="loading[item.borrowId]"
                                             class="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 
                                                 text-white px-4 py-2 rounded-lg text-sm transition duration-300 min-w-[120px]">
-                                            <svg v-if="loading[item.borrowId]" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            <svg v-if="loading[item.borrowId]"
+                                                class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                    stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                </path>
                                             </svg>
                                             <span>{{ loading[item.borrowId] ? 'กำลังคืน...' : 'คืนหนังสือ' }}</span>
                                         </button>
-                                        <span v-else-if="item.returnDate" 
+                                        <span v-else-if="item.returnDate"
                                             class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm min-w-[120px] bg-green-100 text-green-800">
                                             Returned
                                         </span>
-                                        <span v-else 
+                                        <span v-else
                                             class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm min-w-[120px] bg-yellow-100 text-yellow-800">
                                             -
                                         </span>
@@ -195,10 +220,14 @@ const hasData = (data) => {
                         <thead>
                             <tr class="bg-gray-50">
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Book Title</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrow Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Return Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Book Title
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrow Date
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Return Date
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                             </tr>
                         </thead>
@@ -236,18 +265,3 @@ const hasData = (data) => {
         </div>
     </div>
 </template>
-
-<style scoped>
-.animate-spin {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-</style>

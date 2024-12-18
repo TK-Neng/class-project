@@ -29,6 +29,9 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_PASSWORD: Env.schema.string.optional(),
   DB_DATABASE: Env.schema.string(),
 
+  MAIL_USERNAME: Env.schema.string(),
+  MAIL_PASSWORD: Env.schema.string(),
+
   /*
   |----------------------------------------------------------
   | Variables for configuring session package
