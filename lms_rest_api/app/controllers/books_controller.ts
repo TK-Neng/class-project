@@ -3,7 +3,6 @@ import Book from '#models/book'
 import { bookValidator } from '#validators/book'
 import fs from 'fs'
 import path from 'path'
-
 export default class BooksController {
   async index({ auth, response, request }: HttpContext) {
     const page = request.input('page', 1) // Default page 1
@@ -23,74 +22,56 @@ export default class BooksController {
   }
 
   async show({ auth, response, params }: HttpContext) {
-    try {
-      const user = auth.getUserOrFail()
-      const book = await Book.query()
-        .where('book_id', params.id)
-        .preload('genres', (query) => {
-          query.orderBy('name', 'asc')
-        })
-        .firstOrFail()
-      return response.ok(book)
-    } catch (error) {
-      return response.badRequest(error.messages)
-    }
+    const user = auth.getUserOrFail()
+    const book = await Book.query()
+      .where('book_id', params.id)
+      .preload('genres', (query) => {
+        query.orderBy('name', 'asc')
+      })
+      .firstOrFail()
+    return response.ok(book)
   }
 
-  async store({ auth, response, request }: HttpContext) {
-    try {
-      const user = auth.getUserOrFail()
+  async store({ auth, bouncer, response, request }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await bouncer.with('BookPolicy').authorize('create')
+    // Validate request data
+    const data = await bookValidator.validate(request.all())
 
-      // Check if user is admin or owner
-      if (user.role !== 'ADMIN' && user.role !== 'OWNER') {
-        return response.unauthorized({
-          message: 'Only administrators can create books',
-        })
+    // Handle file upload
+    const image = request.file('image', {
+      extnames: ['jpg', 'png', 'jpeg'],
+      size: '2mb',
+    })
+
+    if (image) {
+      if (!image.isValid) {
+        return response.badRequest(image.errors)
       }
 
-      // Validate request data
-      const data = await bookValidator.validate(request.all())
+      // เพิ่มนามสกุลไฟล์เข้าไปในชื่อไฟล์
+      const fileName = `${data.title.toLowerCase()}.${image.extname}`
 
-      // Handle file upload
-      const image = request.file('image', {
-        extnames: ['jpg', 'png', 'jpeg'],
-        size: '2mb',
-      })
-
-      if (image) {
-        if (!image.isValid) {
-          return response.badRequest(image.errors)
-        }
-
-        // เพิ่มนามสกุลไฟล์เข้าไปในชื่อไฟล์
-        const fileName = `${data.title.toLowerCase()}.${image.extname}`
-
-        // แก้ไขจาก "../public/images" เป็น path ที่ถูกต้อง
-        await image.move(path.join(process.cwd(), 'public', 'images'), {
-          name: fileName,
-          overwrite: true, // This will overwrite existing files with the same name
-        })
-      }
-
-      // Create new book
-      const book = await Book.create(data)
-
-      // เพิ่ม genres ถ้ามีการส่งมา
-      if (data.genres && data.genres.length > 0) {
-        await book.related('genres').attach(data.genres)
-      }
-
-      await book.load('genres')
-      return response.created({
-        book,
-        message: 'Book created successfully',
-      })
-    } catch (error) {
-      return response.badRequest({
-        message: 'Failed to create book',
-        errors: error.messages || error.message,
+      // แก้ไขจาก "../public/images" เป็น path ที่ถูกต้อง
+      await image.move(path.join(process.cwd(), 'public', 'images'), {
+        name: fileName,
+        overwrite: true, // This will overwrite existing files with the same name
       })
     }
+
+    // Create new book
+    const book = await Book.create(data)
+
+    // เพิ่ม genres ถ้ามีการส่งมา
+    if (data.genres && data.genres.length > 0) {
+      await book.related('genres').attach(data.genres)
+    }
+
+    await book.load('genres')
+    return response.created({
+      book,
+      message: 'Book created successfully',
+    })
   }
 
   async getBookImage({ response, params }: HttpContext) {
@@ -139,58 +120,36 @@ export default class BooksController {
     }
   }
 
-  async destroy({ auth, response, params }: HttpContext) {
-    try {
-      const user = auth.getUserOrFail()
-
-      // Check if user is admin or owner
-      if (user.role !== 'ADMIN' && user.role !== 'OWNER') {
-        return response.unauthorized({
-          message: 'Only administrators can delete books',
-        })
+  async destroy({ auth, bouncer, response, params }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await bouncer.with('BookPolicy').authorize('delete')
+    const book = await Book.findOrFail(params.id)
+    // Delete book image if exists
+    const possibleExtensions = ['jpg', 'png', 'jpeg']
+    for (const ext of possibleExtensions) {
+      const imagePath = path.join(
+        process.cwd(),
+        'public',
+        'images',
+        `${book.title.toLowerCase()}.${ext}`
+      )
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath)
+        break
       }
-
-      const book = await Book.findOrFail(params.id)
-
-      // Delete book image if exists
-      const possibleExtensions = ['jpg', 'png', 'jpeg']
-      for (const ext of possibleExtensions) {
-        const imagePath = path.join(
-          process.cwd(),
-          'public',
-          'images',
-          `${book.title.toLowerCase()}.${ext}`
-        )
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath)
-          break
-        }
-      }
-      // ลบความสัมพันธ์กับ genres ก่อน
-      await book.related('genres').detach()
-      await book.delete()
-
-      return response.ok({
-        message: 'Book and its image deleted successfully',
-      })
-    } catch (error) {
-      return response.badRequest({
-        message: 'Failed to delete book',
-        errors: error.messages || error.message,
-      })
     }
+    // ลบความสัมพันธ์กับ genres ก่อน
+    await book.related('genres').detach()
+    await book.delete()
+
+    return response.ok({
+      message: 'Book and its image deleted successfully',
+    })
   }
 
-  async update({ auth, response, request, params }: HttpContext) {
-    try {
+  async update({ auth, bouncer, response, request, params }: HttpContext) {
       const user = auth.getUserOrFail()
-
-      if (user.role !== 'ADMIN' && user.role !== 'OWNER') {
-        return response.unauthorized({
-          message: 'Only administrators can update books',
-        })
-      }
-
+      await bouncer.with('BookPolicy').authorize('update')
       const book = await Book.findOrFail(params.id)
       const data = await bookValidator.validate(request.all())
       const oldTitle = book.title.toLowerCase()
@@ -247,12 +206,6 @@ export default class BooksController {
         book,
         message: 'Book updated successfully',
       })
-    } catch (error) {
-      return response.badRequest({
-        message: 'Failed to update book',
-        errors: error.messages || error.message,
-      })
-    }
   }
 
   async quickSearch({ auth, request, response }: HttpContext) {

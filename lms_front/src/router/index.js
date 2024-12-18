@@ -11,6 +11,7 @@ import User from "../components/User.vue";
 import AddGenre from "../components/AddGenre.vue";
 import EditUser from "../components/EditUser.vue";
 import AddAdmin from "../components/AddAdmin.vue";
+import Borrow from "../components/Borrow.vue";
 const routes = [
   {
     path: "/",
@@ -106,6 +107,14 @@ const routes = [
     meta: {
       requiresAuth: true,
       requiresAuthRole: true,
+    },
+  },
+  {
+    path: "/borrow",
+    name: "Borrow",
+    component: Borrow,
+    meta: {
+      requiresAuth: true,
     },
   }
 ];

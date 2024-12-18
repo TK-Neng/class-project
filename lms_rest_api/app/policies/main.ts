@@ -12,4 +12,9 @@
 |
 */
 
-export const policies = {}
+export const policies = {
+  BorrowingPolicy: () => import('#policies/borrowing_policy'),
+  BookPolicy: () => import('#policies/book_policy'),
+  GenrePolicy: () => import('#policies/genre_policy'),
+  UserPolicy: () => import('#policies/user_policy')
+}
