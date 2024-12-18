@@ -28,13 +28,20 @@ const showNotification = (type, message) => {
 };
 const borrow = ref();
 const hasPendingBorrow = ref(false);
+const hasPhoneNumber = ref(false);
 
 onBeforeMount(async () => {
     book.value = await getBookById(bookId);
     // Check if user is admin or owner
     const user = await bookStore.getRole();
     isAdmin.value = user.role === 'ADMIN' || user.role === 'OWNER';
-    borrow.value = await getBorrow();   
+    borrow.value = await getBorrow();
+    
+    // Check if user has phone number
+    if (borrow.value && borrow.value.length > 0) {
+        hasPhoneNumber.value = borrow.value[0].user.phoneNumber != null;
+    }
+    
     // Check if user has pending borrow
     if (borrow.value) {
         const pendingBorrow = borrow.value.find(b => 
@@ -45,7 +52,7 @@ onBeforeMount(async () => {
 });
 
 const canBorrow = computed(() => {
-    return !isAdmin.value && book.value?.quantity > 0 && !hasPendingBorrow.value;
+    return !isAdmin.value && book.value?.quantity > 0 && !hasPendingBorrow.value && hasPhoneNumber.value;
 });
 
 const goBack = () => {
@@ -87,6 +94,13 @@ const showBorrowModal = ref(false);
 const returnDate = ref('');
 
 const openBorrowModal = () => {
+    if (!hasPhoneNumber.value) {
+        showNotification('error', 'Please add your phone number in your profile before borrowing');
+        setTimeout(() => {
+            router.push('/profile');
+        }, 2000);
+        return;
+    }
     showBorrowModal.value = true;
 };
 
@@ -286,6 +300,9 @@ const handleBorrow = async () => {
                             <div>
                                 <p v-if="hasPendingBorrow" class="text-yellow-600">
                                     You have a pending borrow for this book
+                                </p>
+                                <p v-else-if="!hasPhoneNumber" class="text-yellow-600">
+                                    Please add your phone number in profile to borrow books
                                 </p>
                                 <p v-else :class="book.quantity > 0 ? 'text-green-600' : 'text-red-600'">
                                     {{ book.quantity > 0 ? 'Available for borrowing' : 'Full Borrow' }}

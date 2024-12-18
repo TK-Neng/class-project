@@ -23,7 +23,6 @@ const changePage = async (page) => {
   data.value = await book.getAllBooks();
 };
 const navigateToDetail = (bookId) => {
-  console.log(bookId);
   router.push({ name: 'DetailBook', params: { id: bookId } });
 };
 onBeforeMount(async () => {

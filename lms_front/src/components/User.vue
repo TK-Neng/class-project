@@ -207,6 +207,7 @@ const confirmDelete = async () => {
                 <tr>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Phone</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -217,6 +218,7 @@ const confirmDelete = async () => {
                     {{ user.firstName }} {{ user.lastName }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ user.email }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ user.phoneNumber || '-' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
                           :class="user.role === 'Student' ? 

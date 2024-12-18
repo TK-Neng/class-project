@@ -90,7 +90,7 @@ const hasData = (data) => {
 };
 
 const sendOverdueNotification = async (borrowId) => {
-    loading.value[borrowId] = true;
+    loading.value[`mail_${borrowId}`] = true;  // Updated to use unique key for mail loading
     try {
         const res = await fetch(`${urlBorrow}/notify`, {
             method: 'POST',
@@ -104,7 +104,7 @@ const sendOverdueNotification = async (borrowId) => {
     } catch (error) {
         showToast('เกิดข้อผิดพลาดในการส่งอีเมล', 'error');
     } finally {
-        loading.value[borrowId] = false;
+        loading.value[`mail_${borrowId}`] = false;
     }
 };
 </script>
@@ -160,9 +160,19 @@ const sendOverdueNotification = async (borrowId) => {
                                     <div class="flex gap-2">
                                         <button v-if="showSendMailButton(item)"
                                             @click="sendOverdueNotification(item.borrowId)"
-                                            class="inline-flex items-center justify-center bg-red-500 hover:bg-red-600 
+                                            :disabled="loading[`mail_${item.borrowId}`]"
+                                            class="inline-flex items-center justify-center bg-red-500 hover:bg-red-600 disabled:bg-red-300 
                                                 text-white px-4 py-2 rounded-lg text-sm transition duration-300 min-w-[120px]">
-                                            Send Mail
+                                            <svg v-if="loading[`mail_${item.borrowId}`]"
+                                                class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                    stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                </path>
+                                            </svg>
+                                            <span>{{ loading[`mail_${item.borrowId}`] ? 'กำลังส่ง...' : 'Send Mail' }}</span>
                                         </button>
                                         <button v-if="getStatus(item) === 'Borrowed' || getStatus(item) === 'Overdue'"
                                             @click="goToReturn(item.borrowId, item.userId)"
