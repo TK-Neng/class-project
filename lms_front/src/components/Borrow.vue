@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onBeforeMount } from 'vue';
-import { getBorrow } from '../../composable/getBorrow';
+import { getBorrow, urlBorrow } from '../../composable/getBorrow';
 import Nav from './Nav.vue';
 import { useRouter } from 'vue-router';
 import { useBookStore } from '../../stores/book'
@@ -11,18 +11,48 @@ const borrow = ref();
 const goToBack = () => {
     router.push({ name: 'Home' });
 }
-const goToReturn = (borrowId) => {
-    // TODO: Implement return functionality
-    console.log('Return book:', borrowId);
+const loading = ref({});
+const toast = ref({ show: false, message: '', type: '' });
+
+const showToast = (message, type = 'success') => {
+    toast.value = { show: true, message, type };
+    setTimeout(() => {
+        toast.value.show = false;
+    }, 3000);
+};
+
+const goToReturn = async(borrow_id, user_id) => {
+    if (!confirm('คุณแน่ใจหรือไม่ที่จะคืนหนังสือเล่มนี้?')) return;
+    
+    loading.value[borrow_id] = true;
+    try {
+        const res = await fetch(urlBorrow, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ borrow_id, user_id }),
+        });
+
+        if (!res.ok) throw new Error('Failed to return book');
+
+        // Refresh borrow data
+        borrow.value = await getBorrow();
+        showToast('คืนหนังสือเรียบร้อยแล้ว');
+    } catch (error) {
+        console.error(error);
+        showToast('เกิดข้อผิดพลาดในการคืนหนังสือ', 'error');
+    } finally {
+        loading.value[borrow_id] = false;
+    }
 }
 onBeforeMount(async () => {
     Role.value = await book.getRole();
     borrow.value = await getBorrow();
-    console.log(borrow.value);
 })
 
 const formatDate = (date) => {
-    console.log(date);
     if (!date) return '-';
     const d = new Date(date);
     if (isNaN(d.getTime())) return 'Invalid Date';
@@ -62,10 +92,24 @@ const hasData = (data) => {
 
 <template>
     <Nav />
+    <div v-if="toast.show" 
+         :class="[
+             'fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg transition-all duration-300 z-50',
+             toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+         ]"
+    >
+        <p class="text-white font-medium">{{ toast.message }}</p>
+    </div>
     <div class="min-h-screen bg-gray-100">
         <!-- Admin/Owner View -->
         <div v-if="Role?.role === 'ADMIN' || Role?.role === 'OWNER'" class="container mx-auto px-4 py-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Borrow Management</h1>
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Borrow Management</h1>
+                <button @click="goToBack"
+                    class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+                    กลับไปหน้าหลัก
+                </button>
+            </div>
             <div class="bg-white rounded-lg shadow-md p-6">
                 <div v-if="hasData(borrow)" class="overflow-x-auto">
                     <table class="min-w-full">
@@ -76,7 +120,6 @@ const hasData = (data) => {
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Book Title</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrow Date</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Return Date</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
@@ -88,7 +131,6 @@ const hasData = (data) => {
                                 <td class="px-6 py-4">{{ item.book?.title }}</td>
                                 <td class="px-6 py-4">{{ formatDate(item.borrowDate) }}</td>
                                 <td class="px-6 py-4">{{ formatDate(item.dueDate) }}</td>
-                                <td class="px-6 py-4">{{ item.returnDate ? formatDate(item.returnDate) : '-' }}</td>
                                 <td class="px-6 py-4">
                                     <span :class="getStatusClass(item)">
                                         {{ getStatus(item) }}
@@ -96,9 +138,21 @@ const hasData = (data) => {
                                 </td>
                                 <td class="px-6 py-4">
                                     <button v-if="showSendMailButton(item)"
-                                        @click="goToReturn(item.id)"
+                                        @click=""
                                         class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm">
                                         Send Mail
+                                    </button>
+                                    <button v-else-if="getStatus(item) === 'Borrowed'"
+                                        @click="goToReturn(item.borrowId, item.userId)"
+                                        :disabled="loading[item.borrowId]"
+                                        class="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 
+                                            text-white px-4 py-2 rounded-lg text-sm transition duration-300 min-w-[120px]"
+                                    >
+                                        <svg v-if="loading[item.borrowId]" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>{{ loading[item.borrowId] ? 'กำลังคืน...' : 'คืนหนังสือ' }}</span>
                                     </button>
                                     <span v-else-if="item.returnDate" class="text-green-600 font-medium">Returned</span>
                                     <span v-else class="text-yellow-600 font-medium">-</span>
@@ -120,7 +174,13 @@ const hasData = (data) => {
 
         <!-- User View -->
         <div v-else-if="Role?.role === 'USER'" class="container mx-auto px-4 py-8">
-            <h1 class="text-2xl font-bold text-gray-800 mb-6">My Borrowings</h1>
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">My Borrowings</h1>
+                <button @click="goToBack"
+                    class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+                    กลับไปหน้าหลัก
+                </button>
+            </div>
             <div class="bg-white rounded-lg shadow-md p-6">
                 <div v-if="hasData(borrow)" class="overflow-x-auto">
                     <table class="min-w-full">
@@ -168,3 +228,18 @@ const hasData = (data) => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+</style>

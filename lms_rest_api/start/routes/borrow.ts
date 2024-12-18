@@ -4,4 +4,5 @@ import { middleware } from '#start/kernel'
 router.group(() => {
     router.get('/borrowings', [BorrowingsController, 'index'])
     router.post('/borrowings', [BorrowingsController, 'borrow'])
+    router.put('/borrowings', [BorrowingsController, 'return'])
 }).prefix('/api').use(middleware.auth())

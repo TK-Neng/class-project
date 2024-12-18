@@ -6,7 +6,7 @@ import Book from './book.js'
 
 export default class Borrowing extends BaseModel {
   @column({ isPrimary: true })
-  declare id: number
+  declare borrow_id: number
 
   @column()
   declare user_id: number
@@ -20,7 +20,7 @@ export default class Borrowing extends BaseModel {
   @column.date()
   declare due_date: DateTime
 
-  @column.dateTime()
+  @column.date()
   declare return_date: DateTime | null
 
   @column.dateTime({ autoCreate: true })
