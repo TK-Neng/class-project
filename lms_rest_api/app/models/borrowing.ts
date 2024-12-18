@@ -1,6 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import Status from '../../contract/Status.js'
+import User from './user.js'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Book from './book.js'
 export default class Borrowing extends BaseModel {
   @column({ isPrimary: true })
   declare borrow_id: number
@@ -29,4 +32,10 @@ export default class Borrowing extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @belongsTo(()=> User)
+  declare user: BelongsTo<typeof User>
+
+  @belongsTo(()=> Book)
+  declare book: BelongsTo<typeof Book>
 }

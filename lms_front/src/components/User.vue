@@ -176,23 +176,23 @@ const confirmDelete = async () => {
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8 animate-fadeIn">
       <div class="px-4 py-6 sm:px-0">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-8 tracking-tight">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8 tracking-tight animate-slideDown">
           User Management
         </h1>
         
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
           <div class="p-6 border-b border-gray-200 sm:flex sm:items-center sm:justify-between bg-gray-50">
             <div class="sm:flex-auto">
-              <h2 class="text-2xl font-bold text-gray-900">Users</h2>
+              <h2 class="text-2xl font-bold text-gray-900 animate-slideDown">Users</h2>
               <p class="mt-2 text-sm text-gray-600">A list of all users in the system.</p>
             </div>
             <div v-if="isOwner" class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
               <button @click="goToAddAdmin"
                       class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium 
                              rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200
-                             shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                             shadow-sm hover:shadow-md transform hover:-translate-y-0.5 animate-slideDown">
                 <span class="mr-2">Add New Admin</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
@@ -203,7 +203,7 @@ const confirmDelete = async () => {
           
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
+              <thead class="bg-gray-50 animate-slideDown">
                 <tr>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
@@ -212,7 +212,7 @@ const confirmDelete = async () => {
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 transition-colors duration-150">
+                <tr v-for="(user, index) in users" :key="user.id" class="hover:bg-gray-50 transition-colors duration-200 animate-slideIn" :style="{ animationDelay: `${index * 0.1}s` }">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {{ user.firstName }} {{ user.lastName }}
                   </td>
@@ -253,3 +253,33 @@ const confirmDelete = async () => {
     </div>
   </div>
 </template>
+
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.5s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.5s ease-out;
+  animation-fill-mode: both;
+}
+</style>

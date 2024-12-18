@@ -3,12 +3,14 @@ import { onBeforeMount, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import Nav from './Nav.vue';
 import { useBookStore } from '../../stores/book';
+const Role = ref(null);
 const book = useBookStore();
 const currentPage = ref(book.page);
 const router = useRouter()
 const route = useRoute()
 const data = ref({ data: [] }); // เพิ่ม initial value
 const totalPages = ref(); // Assuming there are 5 pages for simplicity
+const totalBooks = ref(0);
 import { urlBook } from '../../composable/getBook';
 const changePage = async (page) => {
   currentPage.value = page;
@@ -33,12 +35,25 @@ onBeforeMount(async () => {
   // โหลดข้อมูลครั้งแรก
   data.value = await book.getAllBooks();
   totalPages.value = data.value.meta.lastPage;
+  totalBooks.value = data.value.meta.total;
+  Role.value = await book.getRole();
+  console.log(data.value);
 })
 
 </script>
 
 <template>
   <Nav />
+  <!-- Add this div after Nav -->
+  <div v-if="Role?.role === 'ADMIN'" class="bg-white shadow-md p-4 mx-auto max-w-7xl mt-4 rounded-lg">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-gray-800">Total Books</h2>
+      <div class="bg-cyan-100 px-4 py-2 rounded-full">
+        <span class="text-cyan-800 font-bold">{{ totalBooks }}</span>
+        <span class="text-cyan-600 ml-1">Books</span>
+      </div>
+    </div>
+  </div>
   <div class="min-h-screen bg-gray-100 py-8">
     <div class="cards-container flex flex-row flex-wrap justify-center gap-6 px-4">
       <div v-for="book in data.data" :key="book.id" 

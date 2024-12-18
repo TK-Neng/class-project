@@ -6,7 +6,7 @@ export default class BoorrowingSeeder extends BaseSeeder {
   public async run() {
     await Borrowing.createMany([
       {
-        user_id: 2,
+        user_id: 3,
         book_id: 1,
         borrow_date: DateTime.local(),
         due_date: DateTime.local().plus({ days: 14 }),
@@ -14,7 +14,7 @@ export default class BoorrowingSeeder extends BaseSeeder {
         status: Status.BORROWED,
       },
       {
-        user_id: 2,
+        user_id: 3,
         book_id: 2,
         borrow_date: DateTime.local().minus({ days: 20 }),
         due_date: DateTime.local().minus({ days: 6 }),
@@ -22,7 +22,7 @@ export default class BoorrowingSeeder extends BaseSeeder {
         status: Status.RETURNED,
       },
       {
-        user_id: 2,
+        user_id: 3,
         book_id: 3,
         borrow_date: DateTime.local().minus({ days: 30 }),
         due_date: DateTime.local().minus({ days: 16 }),

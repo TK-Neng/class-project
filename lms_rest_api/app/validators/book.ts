@@ -16,7 +16,7 @@ const schema = vine.object({
             }
             return value
         }),
-    quantity: vine.number().min(0).max(999),
+    quantity: vine.number().min(1).max(999),
     genres: vine.array(vine.number().min(1)) // แก้ไขตรงนี้
 })
 

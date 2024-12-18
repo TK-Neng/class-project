@@ -1,6 +1,6 @@
 const API_ROOT = import.meta.env.VITE_API_ROOT;
 const URL = `${API_ROOT}/api/users`;
-
+const urlAdmin = `${API_ROOT}/api/admin`;
 const getProfile = async () => {
     try{
         const res = await fetch(URL+'/profile', {
@@ -62,4 +62,4 @@ const getUser = async (id) => {
 }
 
 
-export { URL, getProfile, getAllUsers, getUser };
+export { URL, getProfile, getAllUsers, getUser, urlAdmin };

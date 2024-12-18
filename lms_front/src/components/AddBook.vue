@@ -208,8 +208,8 @@ const validateStep2 = () => {
         isValid = false
     }
 
-    if (book.quantity < 0 || book.quantity > 999) {
-        errors.quantity = 'Quantity must be between 0 and 999'
+    if (book.quantity < 1 || book.quantity > 999) {
+        errors.quantity = 'Quantity must be between 1 and 999'
         isValid = false
     }
 

@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, manyToMany } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import Genre from './genre.js'
-import type { ManyToMany } from '@adonisjs/lucid/types/relations'
+import type { HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
+import Borrowing from './borrowing.js'
 
 export default class Book extends BaseModel {
   @column({ isPrimary: true })
@@ -37,4 +38,8 @@ export default class Book extends BaseModel {
     pivotTimestamps: true,
   })
   declare genres: ManyToMany<typeof Genre>
+
+
+  @hasMany(()=> Borrowing)
+  declare borrowings: HasMany<typeof Borrowing>
 }

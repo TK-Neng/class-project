@@ -34,14 +34,11 @@ export default class UsersController {
             if (user.role !== Role.OWNER) {
                 return response.unauthorized('Only owner can create admin accounts')
             }
-
             const payload = await request.validateUsing(registerUserValidator)
-
             await User.create({
                 ...payload,
                 role: Role.ADMIN // Force role to be ADMIN
             })
-
             return response.created({ message: 'Admin user created successfully' })
         } catch (error) {
             return response.badRequest(error.messages)
