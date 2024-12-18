@@ -60,9 +60,11 @@
     "@adonisjs/session": "^7.5.0",
     "@adonisjs/static": "^1.1.1",
     "@maximemrf/adonisjs-jwt": "^0.2.2",
+    "@types/nodemailer": "^6.4.17",
     "@vinejs/vine": "^2.1.0",
     "luxon": "^3.5.0",
     "mysql2": "^3.11.5",
+    "nodemailer": "^6.9.16",
     "reflect-metadata": "^0.2.2"
   },
   "hotHook": {
