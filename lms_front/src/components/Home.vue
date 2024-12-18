@@ -37,7 +37,6 @@ onBeforeMount(async () => {
   totalPages.value = data.value.meta.lastPage;
   totalBooks.value = data.value.meta.total;
   Role.value = await book.getRole();
-  console.log(data.value);
 })
 
 </script>

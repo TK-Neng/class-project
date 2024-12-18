@@ -1,12 +1,12 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
-import Status from '../../contract/Status.js'
-import User from './user.js'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import User from './user.js'
 import Book from './book.js'
+
 export default class Borrowing extends BaseModel {
   @column({ isPrimary: true })
-  declare borrow_id: number
+  declare id: number
 
   @column()
   declare user_id: number
@@ -14,18 +14,14 @@ export default class Borrowing extends BaseModel {
   @column()
   declare book_id: number
 
-  @column.date()
+  @column.date({ autoCreate: true })
   declare borrow_date: DateTime
 
   @column.date()
   declare due_date: DateTime
 
-  @column.date()
+  @column.dateTime()
   declare return_date: DateTime | null
-
-  @column()
-  declare status: Status
-
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -33,9 +29,13 @@ export default class Borrowing extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(()=> User)
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
   declare user: BelongsTo<typeof User>
 
-  @belongsTo(()=> Book)
+  @belongsTo(() => Book, {
+    foreignKey: 'book_id',
+  })
   declare book: BelongsTo<typeof Book>
 }
