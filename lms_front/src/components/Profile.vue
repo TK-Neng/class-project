@@ -102,6 +102,10 @@ const updateProfile = async () => {
     isLoading.value = false;
   }
 };
+
+const goToHome = () => {
+  router.push({ name: "Home"});
+};
 </script>
 
 <template>
@@ -168,6 +172,10 @@ const updateProfile = async () => {
                 class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">
                 ยกเลิก
               </button>
+              <button type="button" @click="goToHome"
+                class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">
+                กลับหน้าหลัก
+              </button>
             </div>
           </form>
 
@@ -201,6 +209,10 @@ const updateProfile = async () => {
                 transition duration-300 ease-in-out focus:outline-none focus:ring-2 
                 focus:ring-indigo-500 focus:ring-offset-2">
                 แก้ไขข้อมูล
+              </button>
+              <button @click="goToHome"
+                class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">
+                กลับหน้าหลัก
               </button>
             </div>
 

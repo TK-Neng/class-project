@@ -7,6 +7,7 @@ import Nav from './Nav.vue';
 import { urlBook } from '../../composable/getBook';
 import {urlBorrow} from '../../composable/getBorrow';
 import { getBorrow } from '../../composable/getBorrow';
+import { getProfile } from '../../composable/getUser';
 const route = useRoute();
 const router = useRouter();
 const bookStore = useBookStore();
@@ -29,7 +30,7 @@ const showNotification = (type, message) => {
 const borrow = ref();
 const hasPendingBorrow = ref(false);
 const hasPhoneNumber = ref(false);
-
+const userResponse = ref();
 onBeforeMount(async () => {
     book.value = await getBookById(bookId);
     // Check if user is admin or owner
@@ -37,10 +38,9 @@ onBeforeMount(async () => {
     isAdmin.value = user.role === 'ADMIN' || user.role === 'OWNER';
     borrow.value = await getBorrow();
     
-    // Check if user has phone number
-    if (borrow.value && borrow.value.length > 0) {
-        hasPhoneNumber.value = borrow.value[0].user.phoneNumber != null;
-    }
+    // Improved phone number check
+    userResponse.value = await getProfile();
+    hasPhoneNumber.value = userResponse.value.phone_number && userResponse.value.phone_number.length > 0;
     
     // Check if user has pending borrow
     if (borrow.value) {
@@ -52,7 +52,10 @@ onBeforeMount(async () => {
 });
 
 const canBorrow = computed(() => {
-    return !isAdmin.value && book.value?.quantity > 0 && !hasPendingBorrow.value && hasPhoneNumber.value;
+    return !isAdmin.value && 
+           book.value?.quantity > 0 && 
+           !hasPendingBorrow.value && 
+           hasPhoneNumber.value;
 });
 
 const goBack = () => {
@@ -304,8 +307,11 @@ const handleBorrow = async () => {
                                 <p v-else-if="!hasPhoneNumber" class="text-yellow-600">
                                     Please add your phone number in profile to borrow books
                                 </p>
-                                <p v-else :class="book.quantity > 0 ? 'text-green-600' : 'text-red-600'">
-                                    {{ book.quantity > 0 ? 'Available for borrowing' : 'Full Borrow' }}
+                                <p v-else-if="book.quantity <= 0" class="text-red-600">
+                                    Currently unavailable for borrowing
+                                </p>
+                                <p v-else class="text-green-600">
+                                    Available for borrowing
                                 </p>
                             </div>
                         </div>
