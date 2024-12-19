@@ -15,6 +15,7 @@ router.group(() => {
             router.get('/show/:id', [UsersController, 'getUser']).as('showUser')
             router.put('/edit/:id', [UsersController, 'editUser']).as('editUser')
             router.delete('/delete/:id', [UsersController, 'deleteUser']).as('deleteUser')
+            router.put('/changepass', [UsersController, 'changePassword']).as('changePassword')
         }).use(middleware.auth())
     }).prefix('/users')
     router.group(() => {

@@ -29,4 +29,8 @@ export default class UserPolicy extends BasePolicy {
     }
     return false
   }
+
+  changePassword(user: User, targetUser: User): AuthorizerResponse {
+    return user.user_id === targetUser.user_id
+  }
 }

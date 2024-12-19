@@ -1,5 +1,5 @@
 import User from '#models/user'
-import { registerUserValidator, updateProfileValidator, editUserValidator } from '#validators/user'
+import { registerUserValidator, updateProfileValidator, editUserValidator, changePasswordValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import Role from '../../contract/Role.js'
 export default class UsersController {
@@ -223,6 +223,23 @@ export default class UsersController {
             return response.ok({ message: 'User deleted successfully' })
         }
 
+    }
+
+    async changePassword({ auth, request, response, bouncer }: HttpContext) {
+        const user = await auth.getUserOrFail()
+        await bouncer.with('UserPolicy').authorize('changePassword', user)
+        const payload = await request.validateUsing(changePasswordValidator)
+        try {
+            // Verify old password
+            await User.verifyCredentials(user.username, payload.current_password)
+            // Update password
+            user.password = payload.password
+            await user.save()
+
+            return response.ok({ message: 'Password changed successfully' })
+        } catch (error) {
+            return response.badRequest('Invalid old password')
+        }
     }
 
 }

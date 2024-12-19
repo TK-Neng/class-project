@@ -43,3 +43,11 @@ const editUserSchema = vine.object({
 })
 
 export const editUserValidator = vine.compile(editUserSchema)
+
+
+const changePasswordSchema = vine.object({
+    current_password: vine.string().minLength(6),
+    password: vine.string().minLength(6).confirmed(),
+})
+
+export const changePasswordValidator = vine.compile(changePasswordSchema)

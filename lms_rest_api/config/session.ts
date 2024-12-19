@@ -16,7 +16,8 @@ const sessionConfig = defineConfig({
    * Define how long to keep the session data alive without
    * any activity.
    */
-  age: '1h',
+  // ให้ session มีอายุ 30 นาที
+  age: '30m',
 
   /**
    * Configuration for session cookie and the
