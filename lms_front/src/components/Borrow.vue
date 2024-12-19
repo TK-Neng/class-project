@@ -4,16 +4,21 @@ import { getBorrow, urlBorrow } from '../../composable/getBorrow';
 import Nav from './Nav.vue';
 import { useRouter } from 'vue-router';
 import { useBookStore } from '../../stores/book'
+
+// สร้างตัวแปรและฟังก์ชันที่จำเป็น
 const book = useBookStore()
 const router = useRouter();
 const Role = ref(null);
 const borrow = ref();
-const goToBack = () => {
-    router.push({ name: 'Home' });
-}
 const loading = ref({});
 const toast = ref({ show: false, message: '', type: '' });
 
+// ฟังก์ชันสำหรับกลับไปหน้าหลัก
+const goToBack = () => {
+    router.push({ name: 'Home' });
+}
+
+// ฟังก์ชันแสดง toast message
 const showToast = (message, type = 'success') => {
     toast.value = { show: true, message, type };
     setTimeout(() => {
@@ -21,6 +26,7 @@ const showToast = (message, type = 'success') => {
     }, 3000);
 };
 
+// ฟังก์ชันสำหรับคืนหนังสือ
 const goToReturn = async (borrow_id, user_id) => {
     if (!confirm('คุณแน่ใจหรือไม่ที่จะคืนหนังสือเล่มนี้?')) return;
 
@@ -37,7 +43,6 @@ const goToReturn = async (borrow_id, user_id) => {
 
         if (!res.ok) throw new Error('Failed to return book');
 
-        // Refresh borrow data
         borrow.value = await getBorrow();
         showToast('คืนหนังสือเรียบร้อยแล้ว');
     } catch (error) {
@@ -47,11 +52,14 @@ const goToReturn = async (borrow_id, user_id) => {
         loading.value[borrow_id] = false;
     }
 }
+
+// โหลดข้อมูลเมื่อเริ่มต้นคอมโพเนนต์
 onBeforeMount(async () => {
     Role.value = await book.getRole();
     borrow.value = await getBorrow();
 })
 
+// ฟังก์ชันจัดรูปแบบวันที่เป็นภาษาไทย
 const formatDate = (date) => {
     if (!date) return '-';
     const d = new Date(date);
@@ -63,6 +71,7 @@ const formatDate = (date) => {
     });
 };
 
+// ฟังก์ชันตรวจสอบสถานะการยืม
 const getStatus = (item) => {
     if (item.returnDate) return 'Returned';
     const dueDate = new Date(item.dueDate);
@@ -70,6 +79,7 @@ const getStatus = (item) => {
     return today > dueDate ? 'Overdue' : 'Borrowed';
 };
 
+// ฟังก์ชันกำหนด class สำหรับแสดงสถานะ
 const getStatusClass = (item) => {
     const status = getStatus(item);
     return {
@@ -80,32 +90,9 @@ const getStatusClass = (item) => {
     };
 };
 
-const showSendMailButton = (item) => {
-    const status = getStatus(item);
-    return status === 'Overdue';
-};
-
+// ฟังก์ชันตรวจสอบว่ามีข้อมูลหรือไม่
 const hasData = (data) => {
     return data && data.length > 0;
-};
-
-const sendOverdueNotification = async (borrowId) => {
-    loading.value[`mail_${borrowId}`] = true;  // Updated to use unique key for mail loading
-    try {
-        const res = await fetch(`${urlBorrow}/notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ borrow_id: borrowId }),
-        });
-
-        if (!res.ok) throw new Error();
-        showToast('ส่งอีเมลแจ้งเตือนเรียบร้อยแล้ว');
-    } catch (error) {
-        showToast('เกิดข้อผิดพลาดในการส่งอีเมล', 'error');
-    } finally {
-        loading.value[`mail_${borrowId}`] = false;
-    }
 };
 </script>
 
@@ -158,22 +145,6 @@ const sendOverdueNotification = async (borrowId) => {
                                 </td>
                                 <td class="px-6 py-4 space-x-2">
                                     <div class="flex gap-2">
-                                        <button v-if="showSendMailButton(item)"
-                                            @click="sendOverdueNotification(item.borrowId)"
-                                            :disabled="loading[`mail_${item.borrowId}`]"
-                                            class="inline-flex items-center justify-center bg-red-500 hover:bg-red-600 disabled:bg-red-300 
-                                                text-white px-4 py-2 rounded-lg text-sm transition duration-300 min-w-[120px]">
-                                            <svg v-if="loading[`mail_${item.borrowId}`]"
-                                                class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                    stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                                </path>
-                                            </svg>
-                                            <span>{{ loading[`mail_${item.borrowId}`] ? 'กำลังส่ง...' : 'Send Mail' }}</span>
-                                        </button>
                                         <button v-if="getStatus(item) === 'Borrowed' || getStatus(item) === 'Overdue'"
                                             @click="goToReturn(item.borrowId, item.userId)"
                                             :disabled="loading[item.borrowId]"

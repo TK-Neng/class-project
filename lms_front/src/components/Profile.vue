@@ -172,10 +172,6 @@ const goToHome = () => {
                 class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">
                 ยกเลิก
               </button>
-              <button type="button" @click="goToHome"
-                class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">
-                กลับหน้าหลัก
-              </button>
             </div>
           </form>
 
