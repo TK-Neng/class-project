@@ -2,9 +2,12 @@ import Book from "#models/book";
 import Borrowing from "#models/borrowing";
 import { HttpContext } from "@adonisjs/core/http";
 import { DateTime } from 'luxon';
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
+
+
 export default class BorrowingsController {
     private transporter;
+
     constructor() {
         this.transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -14,7 +17,7 @@ export default class BorrowingsController {
                 user: process.env.MAIL_USERNAME,
                 pass: process.env.MAIL_PASSWORD
             }
-        })
+        });
     }
 
     async index({ auth, response }: HttpContext) {
@@ -85,19 +88,16 @@ export default class BorrowingsController {
         }
     }
 
-
     async sendOverdueNotification({ auth, request, response }: HttpContext) {
-        await auth.getUserOrFail()
+        const user = await auth.getUserOrFail()
+        const { borrow_id } = request.only(['borrow_id'])
+        
         try {
-            const { borrow_id } = request.only(['borrow_id'])
             const borrowing = await Borrowing.query()
                 .where('borrow_id', borrow_id)
                 .preload('user')
                 .preload('book')
                 .firstOrFail()
-
-            // Verify SMTP connection
-            await this.transporter.verify()
 
             const mailOptions = {
                 from: process.env.MAIL_USERNAME,
@@ -131,12 +131,11 @@ export default class BorrowingsController {
                         </div>
                     </div>
                 `
-            };
+            }
 
-            const info = await this.transporter.sendMail(mailOptions);
+            await this.transporter.sendMail(mailOptions)
             return response.ok({ message: 'ส่งอีเมลแจ้งเตือนเรียบร้อย' })
         } catch (error) {
-            console.error('Email error:', error);
             return response.badRequest({ 
                 message: 'ไม่สามารถส่งอีเมลได้',
                 error: error.message 
