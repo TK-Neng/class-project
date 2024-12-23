@@ -43,7 +43,7 @@ onBeforeMount(async () => {
 <template>
   <Nav />
   <!-- Add this div after Nav -->
-  <div v-if="Role?.role === 'ADMIN'" class="bg-white shadow-md p-4 mx-auto max-w-7xl mt-4 rounded-lg">
+  <div v-if="Role?.role === 'ADMIN'|| Role?.role === 'OWNER'" class="bg-white shadow-md p-4 mx-auto max-w-7xl mt-4 rounded-lg">
     <div class="flex items-center justify-between">
       <h2 class="text-xl font-semibold text-gray-800">Total Books</h2>
       <div class="bg-cyan-100 px-4 py-2 rounded-full">

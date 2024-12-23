@@ -63,6 +63,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.17",
     "@vinejs/vine": "^2.1.0",
+    "dotenv": "^16.4.7",
     "luxon": "^3.5.0",
     "mysql2": "^3.11.5",
     "node-cron": "^3.0.3",
