@@ -5,5 +5,5 @@ router.group(() => {
     router.get('/borrowings', [BorrowingsController, 'index'])
     router.post('/borrowings', [BorrowingsController, 'borrow'])
     router.put('/borrowings', [BorrowingsController, 'return'])
-    router.post('/borrowings/notify', [BorrowingsController, 'sendOverdueNotification']).use(middleware.auth())
+    router.post('/borrowings/notify', [BorrowingsController, 'sendOverdueNotification'])
 }).prefix('/api').use(middleware.auth())
