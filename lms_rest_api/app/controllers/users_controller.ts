@@ -4,13 +4,9 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Role from '../../contract/Role.js'
 export default class UsersController {
     async register({ request, response }: HttpContext) {
-        try {
-            const payload = await request.validateUsing(registerUserValidator)
-            await User.create({ first_name: payload.first_name, last_name: payload.last_name, username: payload.username, password: payload.password, email: payload.email, phone_number: payload.phone_number })
-            response.ok('The user is register successfully.')
-        } catch (error) {
-            response.badRequest(error.messages)
-        }
+        const payload = await request.validateUsing(registerUserValidator)
+        await User.create({ first_name: payload.first_name, last_name: payload.last_name, username: payload.username, password: payload.password, email: payload.email, phone_number: payload.phone_number })
+        response.ok('The user is register successfully.')
     }
 
     async login({ auth, request, response, session }: HttpContext) {

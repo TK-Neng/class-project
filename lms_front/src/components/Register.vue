@@ -87,12 +87,12 @@ const register = async (event, formData) => {
     if (formData.phone_number === '') {
         formData.phone_number = null;
     }
-    
+
     isLoading.value = true;
     try {
         // Simulate loading time
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
+
         const res = await fetch(URL + `/register`, {
             method: 'POST',
             headers: {
@@ -107,6 +107,19 @@ const register = async (event, formData) => {
             setTimeout(() => {
                 router.push({ name: 'Login' });
             }, 2000);
+        } else if (res.status === 400) {
+            const data = await res.json();
+            // Reset previous errors
+            for (const key in errors.value) {
+                if (errors.value.hasOwnProperty(key)) {
+                    errors.value[key] = '';
+                }
+            }
+            // Set new errors from response
+            data.forEach(error => {
+                errors.value[error.field] = error.message;
+            });
+            console.log(data);
         }
     } catch (error) {
         console.error(error);
@@ -129,13 +142,14 @@ const toggleConfirmPasswordVisibility = () => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-sky-50 to-gray-200 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div
+        class="min-h-screen bg-gradient-to-br from-sky-50 to-gray-200 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <!-- Success Message Notification -->
-        <div v-if="showSuccess" 
-             class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg 
+        <div v-if="showSuccess" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg 
                     flex items-center space-x-2 transform transition-all duration-500 
                     animate-[fadeIn_0.5s_ease-out] motion-reduce:transition-none motion-reduce:animate-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
             <span>{{ successMessage }}</span>
@@ -143,8 +157,8 @@ const toggleConfirmPasswordVisibility = () => {
 
         <div class="w-full max-w-md space-y-8">
             <div class="bg-white shadow-2xl rounded-2xl p-8 transition-all duration-300 hover:shadow-lg">
-                <img class="mx-auto h-16 w-auto transition-transform duration-300 hover:scale-110" 
-                     src="https://www.svgrepo.com/show/499664/user-happy.svg" alt="" />
+                <img class="mx-auto h-16 w-auto transition-transform duration-300 hover:scale-110"
+                    src="https://www.svgrepo.com/show/499664/user-happy.svg" alt="" />
 
                 <h2 class="my-6 text-center text-3xl font-bold tracking-tight text-gray-900">
                     Sign up for an account
@@ -256,9 +270,13 @@ const toggleConfirmPasswordVisibility = () => {
                             <button type="submit" @click="register($event, formData)"
                                 class="flex items-center justify-center rounded-lg border border-transparent bg-sky-500 py-2.5 px-6 text-sm font-medium text-white shadow-sm hover:bg-sky-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 disabled:opacity-50"
                                 :disabled="isLoading">
-                                <svg v-if="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg v-if="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
                                 </svg>
                                 {{ isLoading ? 'Registering...' : 'Register' }}
                             </button>
@@ -267,8 +285,9 @@ const toggleConfirmPasswordVisibility = () => {
                 </form>
                 <div class="text-center mt-6">
                     <p class="text-gray-600">
-                        Already have an account? 
-                        <a href="/login" class="font-medium text-sky-500 hover:text-sky-600 transition-colors duration-300 hover:underline">
+                        Already have an account?
+                        <a href="/login"
+                            class="font-medium text-sky-500 hover:text-sky-600 transition-colors duration-300 hover:underline">
                             Sign in
                         </a>
                     </p>
