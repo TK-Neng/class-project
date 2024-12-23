@@ -40,10 +40,12 @@ const addAdmin = async () => {
     });
 
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const data = await response.json();
+      message.value = data.errors.map(error => error.message).join(', ');
+      isError.value = true;
+      return;
     }
 
-    const data = await response.json();
     message.value = 'Admin added successfully!';
     isError.value = false;
     adminData.value = {

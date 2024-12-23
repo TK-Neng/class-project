@@ -119,7 +119,6 @@ const register = async (event, formData) => {
             data.forEach(error => {
                 errors.value[error.field] = error.message;
             });
-            console.log(data);
         }
     } catch (error) {
         console.error(error);
